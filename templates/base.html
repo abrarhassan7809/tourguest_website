@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+    <title>The Alpha World</title>
+    <style>
+        .navbar {
+            background: rgba(236, 139, 2, 0.9);
+        }
+        .navbar-brand img {
+            height: 50px;
+            width: auto;
+        }
+        .navbar-nav .nav-item .nav-link {
+            color: rgba(60, 88, 94, 0.9);
+            font-size: 18px;
+            padding: 10px 20px 10px 20px;
+        }
+        .navbar-nav .nav-item .nav-link:hover {
+            background: rgba(60, 88, 94, 0.6);
+            color: white;
+            border-radius: 10px;
+        }
+        .active {
+            background: rgba(60, 88, 94, 0.6) !important;
+            color: #fff !important;
+            border-radius: 10px;
+        }
+        .logout-btn {
+            background: rgba(60, 88, 94, 0.9);
+            border-radius: 10px;
+            color: white;
+        }
+        .logout-btn:hover {
+            background: rgba(60, 88, 94, 0.6);
+            color: white;
+            border-radius: 10px;
+        }
+        .dropdown-menu {
+            background: rgba(236, 139, 2, 0.9);
+            top: 100%;
+            left: auto !important;
+            right: 0 !important;
+            margin-top: 5px;
+        }
+        .dropdown-menu .dropdown-item {
+            color: rgba(60, 88, 94, 0.9);
+        }
+        .dropdown-menu .dropdown-item:hover {
+            background: rgba(60, 88, 94, 0.6);
+            color: white !important;
+        }
+
+        .carousel-inner .carousel-caption h5, p {
+            /*color: rgba(60, 88, 94, 0.9);*/
+            color: black;
+        }
+
+        .card {
+            border: 2px solid rgba(236, 139, 2, 0.9);
+            border-radius: 20px;
+            transition: transform 0.3s;
+            box-shadow: 3px 3px 5px #888888;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            transition: transform 0.3s;
+            box-shadow: 5px 5px 10px #888888;
+        }
+    </style>
+</head>
+<body>
+    <section class="header-section">
+        <nav class="navbar navbar-expand-lg">
+            <a class="navbar-brand" href=""><img src="/static/logo_images/Logo.png" alt="logo"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse ml-4" id="navbarTogglerDemo02">
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/home/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/booking/">Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/booking_status/">Guest Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/">Users</a>
+                    </li>
+                </ul>
+
+                <!-- Profile Dropdown -->
+                <div class="dropdown position-relative">
+                    <button type="button" class="btn my-2 my-sm-0 logout-btn dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Profile
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/update_profile/data_id/">Profile</a>
+                        <a class="dropdown-item" href="/logout/">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </section>
+
+    <main class="">
+<!--    images carousel section -->
+        <section class="images-carousel">
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                </ol>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img class="d-block w-100" style="height: 600px;" src="/static/images/tour_image1.jpg" alt="First slide">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>First slide label</h5>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" style="height: 600px;" src="/static/images/tour_image2.jpg" alt="Second slide">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Second slide label</h5>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" style="height: 600px;" src="/static/images/tour_image1.jpg" alt="Third slide">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Third slide label</h5>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+        </section>
+
+<!--    package section -->
+        <section class="container package_section mt-5 mb-4">
+            <div class="row">
+                <div class="col-4">
+                    <div class="card">
+                        <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
+                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+                            </div>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <a href="/booking/data_id/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card">
+                        <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
+                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+                            </div>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <a href="" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card">
+                        <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
+                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+                            </div>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <a href="" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!--    info section -->
+        <section class="info_section mt-5 mb-5">
+            <hr style="border: 1px solid gray;">
+            <div class="row m-0" style="justify-content: center; height: 300px;">
+                <div class="col-md-4" style="text-align: center; border-right: 1px solid gray;">
+                    <h4>About Company</h4>
+                    <p class="mt-4">Some quick example text to build on the card title and make up the bulk of the card's content. Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+                <div class="col-md-4" style="text-align: center; border-right: 1px solid gray;">
+                    <h4>About Company</h4>
+                    <p class="mt-4">Some quick example text to build on the card title and make up the bulk of the card's content. Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+                <div class="col-md-4" style="text-align: center;">
+                    <h4>About Company</h4>
+                    <p class="mt-4">Some quick example text to build on the card title and make up the bulk of the card's content. Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+            </div>
+            <hr style="border: 1px solid gray;">
+        </section>
+    </main>
+
+<!--  footer section -->
+    <footer class="footer_section" style="background: rgba(236, 139, 2, 0.9);">
+        <div class="container pt-2">
+            <hr style="border: 1px solid gray;">
+            <div class="row m-0" style="height: 40px;">
+                <div class="col-md-12">
+                    <div class="copyright text-center text-sm text-muted text-lg-start">
+                    © 2025, Create by <a class="font-weight-bold">CodeBase</a> for a better web.
+                  </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

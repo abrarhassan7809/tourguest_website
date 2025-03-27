@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+passlib
+pydantic
+python-jose
+validate_email
+email-validator
+python-multipart
+starlette
+Jinja2
+alembic
