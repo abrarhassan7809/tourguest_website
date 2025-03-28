@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, TIMESTAMP, Boolean, Float
+from sqlalchemy import Column, String, Integer, ForeignKey, TIMESTAMP, Boolean, Float, JSON
 from db_configration.db_connection import Base
 
 
@@ -41,28 +41,32 @@ class Agents(Base):
 class Bookings(Base):
     __tablename__ = "bookings"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    booking_name = Column(String, unique=False, nullable=False)
+    agent_name = Column(String, unique=False, nullable=False)
+    booking_title = Column(String, unique=False, nullable=False)
+    check_in_date = Column(TIMESTAMP, nullable=False)
+    check_out_date = Column(TIMESTAMP, nullable=False)
     booking_image = Column(String, unique=False, nullable=False)
-    booking_details = Column(String, unique=False, nullable=False)
     book_days = Column(String, unique=False, nullable=False)
-    booking_date = Column(TIMESTAMP, nullable=False)
+    booking_details = Column(String, unique=False, nullable=False)
     booking_status = Column(Boolean, default=False)
+
+    admin_id = Column(Integer, ForeignKey("admin.id", ondelete="CASCADE"), nullable=False)
 
 
 class BookingDays(Base):
     __tablename__ = "booking_days"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    booking_day = Column(String, unique=False, nullable=False)
-    booking_day_image1 = Column(String, unique=False, nullable=False)
-    booking_day_image2 = Column(String, unique=False, nullable=False)
-    booking_day_image3 = Column(String, unique=False, nullable=False)
-    booking_day_image4 = Column(String, unique=False, nullable=False)
-    booking_day_image5 = Column(String, unique=False, nullable=False)
-    booking_day_image6 = Column(String, unique=False, nullable=False)
-    booking_day_image7 = Column(String, unique=False, nullable=False)
-    booking_day_image8 = Column(String, unique=False, nullable=False)
-    booking_day_image9 = Column(String, unique=False, nullable=False)
-    booking_day_image10 = Column(String, unique=False, nullable=False)
+    day_title = Column(String, unique=False, nullable=False)
+    booking_day_images = Column(JSON, unique=False, nullable=False)
     booking_day_details = Column(String, unique=False, nullable=False)
-    booking_day_date = Column(TIMESTAMP, nullable=False)
-    booking_status = Column(Boolean, default=False)
+
+    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"), nullable=False)
+
+class BookingDayEvents(Base):
+    __tablename__ = "booking_day_events"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent_name = Column(JSON, unique=False, nullable=False)
+    day_event_images = Column(JSON, unique=False, nullable=False)
+    day_event_details = Column(String, unique=False, nullable=False)
+
+    booking_days_id = Column(Integer, ForeignKey("booking_days.id", ondelete="CASCADE"), nullable=False)

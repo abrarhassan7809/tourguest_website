@@ -87,8 +87,8 @@
 
             <div class="collapse navbar-collapse ml-4" id="navbarTogglerDemo02">
                 <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/home/">Home</a>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/home/">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/booking/">Bookings</a>
@@ -128,22 +128,22 @@
                     <div class="carousel-item active">
                         <img class="d-block w-100" style="height: 600px;" src="/static/images/tour_image1.jpg" alt="First slide">
                         <div class="carousel-caption d-none d-md-block">
-                            <h5>First slide label</h5>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                            <h5>The City of Dreams</h5>
+                            <p>Dubai is a dazzling metropolis known for its futuristic skyline, luxury shopping, and thrilling desert adventures. From the iconic Burj Khalifa to the serene beaches, it offers a perfect blend of modernity and tradition.</p>
                         </div>
                     </div>
                     <div class="carousel-item">
                         <img class="d-block w-100" style="height: 600px;" src="/static/images/tour_image2.jpg" alt="Second slide">
                         <div class="carousel-caption d-none d-md-block">
-                            <h5>Second slide label</h5>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                            <h5>A Land of Heritage & Spirituality</h5>
+                            <p>Saudi Arabia is a land of rich history, stunning landscapes, and deep-rooted traditions. From the sacred cities of Mecca and Medina to the breathtaking desert landscapes, it offers a unique and spiritual experience.</p>
                         </div>
                     </div>
                     <div class="carousel-item">
                         <img class="d-block w-100" style="height: 600px;" src="/static/images/tour_image1.jpg" alt="Third slide">
                         <div class="carousel-caption d-none d-md-block">
-                            <h5>Third slide label</h5>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                            <h5>A Land of Culture & Diversity</h5>
+                            <p>India is a vibrant country filled with historic landmarks, diverse cultures, and breathtaking natural beauty. From the majestic Taj Mahal to the bustling streets of Mumbai, every corner tells a unique and colorful story.</p>
                         </div>
                     </div>
                 </div>
@@ -160,49 +160,34 @@
 
 <!--    package section -->
         <section class="container package_section mt-5 mb-4">
-            <div class="row">
-                <div class="col-4">
-                    <div class="card">
-                        <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
-                        <div class="card-body">
-                            <div class="d-flex">
-                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
-                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+            {% for booking_row in all_booking_data|batch(3) %}
+            <div class="row mb-4">
+                {% for booking in booking_row %}
+                    {% if booking.booking_status %}
+                        <div class="col-4">
+                            <div class="card">
+                                {% if booking.booking_image[0] %}
+                                    <img src="/{{ booking.booking_image[0] }}"  style="border-radius: 20px 20px 0 0;" alt="{{ booking.booking_title }}">
+                                {% else %}
+                                    <img src="/static/images/tour_image1.jpg"  style="border-radius: 20px 20px 0 0;" alt="{{ booking.booking_title }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <div class="d-flex">
+                                        <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">{{ booking.booking_title }}</h5>
+                                        <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+                                    </div>
+                                    <p class="card-text">{{ booking.booking_details[:100] }}{% if booking.booking_details|length > 100 %}...{% endif %}</p>
+                                    <div class="">
+                                        <a href="/booking/{{ booking.id }}/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">{{ booking.book_days }} Days</a>
+                                        <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">{{ 'Active' if booking.booking_status else 'Inactive' }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="/booking/data_id/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
                         </div>
-                    </div>
-                </div>
-
-                <div class="col-4">
-                    <div class="card">
-                        <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
-                        <div class="card-body">
-                            <div class="d-flex">
-                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
-                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
-                            </div>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-4">
-                    <div class="card">
-                        <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
-                        <div class="card-body">
-                            <div class="d-flex">
-                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
-                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
-                            </div>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
-                        </div>
-                    </div>
-                </div>
+                    {% endif %}
+                {% endfor %}
             </div>
+            {% endfor %}
         </section>
 
 <!--    info section -->
@@ -210,16 +195,16 @@
             <hr style="border: 1px solid gray;">
             <div class="row m-0" style="justify-content: center; height: 300px;">
                 <div class="col-md-4" style="text-align: center; border-right: 1px solid gray;">
-                    <h4>About Company</h4>
-                    <p class="mt-4">Some quick example text to build on the card title and make up the bulk of the card's content. Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <h4>About Us</h4>
+                    <p class="mt-4">At The Alpha World, we believe that travel is more than just a journey—it’s an experience that shapes memories for a lifetime. Founded in 2010, our mission is to provide unforgettable, immersive, and well-curated travel experiences tailored to every traveler’s desires. Whether you seek adventure, cultural exploration, luxury getaways, or off-the-beaten-path discoveries, we bring your travel dreams to life with expert planning and personalized service.</p>
                 </div>
                 <div class="col-md-4" style="text-align: center; border-right: 1px solid gray;">
-                    <h4>About Company</h4>
-                    <p class="mt-4">Some quick example text to build on the card title and make up the bulk of the card's content. Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <h4>Our Team</h4>
+                    <p class="mt-4">Behind every great adventure is a dedicated team of professionals passionate about travel. Our team comprises experienced travel consultants, knowledgeable tour guides, and expert coordinators who ensure every aspect of your trip is seamless and extraordinary. From our visionary founders to our enthusiastic support staff, each member of The Alpha World is committed to delivering top-tier experiences with a personal touch.</p>
                 </div>
                 <div class="col-md-4" style="text-align: center;">
-                    <h4>About Company</h4>
-                    <p class="mt-4">Some quick example text to build on the card title and make up the bulk of the card's content. Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <h4>Our Journey</h4>
+                    <p class="mt-4">What began as a small passion project has grown into a renowned travel company, trusted by adventurers worldwide. we embraced innovations to enhance our travelers’ experiences. With thousands of happy customers, prestigious partnerships, and recognition in the travel industry. Our vision remains the same to create meaningful journeys, and provide travel experiences that leave a lasting impact. Join us on an unforgettable journey—because with The Alpha World, the world is yours to explore! 🌍✨</p>
                 </div>
             </div>
             <hr style="border: 1px solid gray;">

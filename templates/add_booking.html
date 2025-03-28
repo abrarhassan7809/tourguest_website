@@ -156,7 +156,7 @@
                                     <input type="datetime-local" name="check_out_date" placeholder="Check Out Date" class="form-control" required>
                                 </div>
                                 <div class="input-group input-group-outline mb-3">
-                                    <input type="number" id="booking_days" name="booking_days" placeholder="Select Days" min="1" max="100" class="form-control" required onchange="generateSteps()">
+                                    <input type="number" id="booking_days" name="booking_days" placeholder="Select Days" min="1" class="form-control" required onchange="generateSteps()">
                                 </div>
                                 <div class="input-group input-group-outline mb-3">
                                     <input type="file" name="images" class="form-control" multiple required>
@@ -253,6 +253,24 @@
                 document.getElementById("step" + currentStep).style.display = "block";
             }
         }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          var errorAlerts = document.querySelectorAll(".alert-danger");
+          var successAlerts = document.querySelectorAll(".alert-success");
+
+          errorAlerts.forEach(function (errorAlert) {
+              setTimeout(function () {
+                  errorAlert.style.display = "none";
+              }, 2000);
+          });
+
+          successAlerts.forEach(function (successAlert) {
+              setTimeout(function () {
+                  successAlert.style.display = "none";
+              }, 2000);
+          });
+        });
     </script>
 </body>
 </html>

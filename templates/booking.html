@@ -121,58 +121,32 @@
             <a href="/add_booking/" class="btn add_event_btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Booking</a>
         </div>
         <div class="package_section mt-3">
-            <div class="row">
-            <div class="col-4">
-                <div class="card">
-                    <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
-                    <div class="card-body">
-                        <div class="d-flex">
-                            <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
-                            <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <div class="">
-                            <a href="/booking/data_id/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
-                            <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">Active</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-4">
-                <div class="card">
-                    <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
-                    <div class="card-body">
-                        <div class="d-flex">
-                            <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
-                            <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <div class="">
-                            <a href="/booking/data_id/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
-                            <span class="badge badge-pill badge-danger" style="padding: 10px; float: right;">Not Active</span>
+            {% for booking_row in all_booking_data|batch(3) %}
+            <div class="row mb-4">
+                {% for booking in booking_row %}
+                <div class="col-4">
+                    <div class="card">
+                        {% if booking.booking_image[0] %}
+                            <img src="/{{ booking.booking_image[0] }}"  style="border-radius: 20px 20px 0 0;" alt="{{ booking.booking_title }}">
+                        {% else %}
+                            <img src="/static/images/tour_image1.jpg"  style="border-radius: 20px 20px 0 0;" alt="{{ booking.booking_title }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">{{ booking.booking_title }}</h5>
+                                <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
+                            </div>
+                            <p class="card-text">{{ booking.booking_details[:100] }}{% if booking.booking_details|length > 100 %}...{% endif %}</p>
+                            <div class="">
+                                <a href="/booking/{{ booking.id }}/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">{{ booking.book_days }} Days</a>
+                                <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">{{ 'Active' if booking.booking_status else 'Inactive' }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-
-            <div class="col-4">
-                <div class="card">
-                    <img src="/static/images/tour_image1.jpg" style="border-radius: 20px 20px 0 0;" alt="">
-                    <div class="card-body">
-                        <div class="d-flex">
-                            <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">Package Name</h5>
-                            <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
-                        </div>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <div class="">
-                            <a href="/booking/data_id/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">3 Days</a>
-                            <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">Active</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            {% endfor %}
         </div>
     </section>
 

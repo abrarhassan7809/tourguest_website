@@ -126,31 +126,20 @@
 
 <!--  booking section -->
     <section class="container booking_detail mt-5 mb-4">
+        {% for booking_data in booking_days_data %}
         <div class="card mb-4">
             <div class="card-header d-flex">
-                <h5 class="">Package Name</h5>
+                <h5 class="">{{ booking_data.day_title }}</h5>
                 <a href="" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 20px;">Edit</a>
                 <a href="" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 20px;">Delete</a>
             </div>
             <div class="card-body">
-                <h5 class="card-title">Day 1</h5>
-                <p class="card-text">With supporting text below as a natural lead-in to additional content. With supporting text below as a natural lead-in to additional content. With supporting text below as a natural lead-in to additional content.</p>
-                <a href="/booking_status/data_id/updates/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
+                <h5 class="card-title">Day {{ loop.index }}</h5>
+                <p class="card-text">{{ booking_data.booking_day_details }}</p>
+                <a href="/booking_status/{{ booking_data.id }}/updates/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
             </div>
         </div>
-
-        <div class="card mb-4">
-            <div class="card-header d-flex">
-                <h5 class="">Package Name</h5>
-                <a href="" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 20px;">Edit</a>
-                <a href="" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 20px;">Delete</a>
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">Day 2</h5>
-                <p class="card-text">With supporting text below as a natural lead-in to additional content. With supporting text below as a natural lead-in to additional content. With supporting text below as a natural lead-in to additional content.</p>
-                <a href="/booking_status/data_id/updates/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
-            </div>
-        </div>
+        {% endfor %}
     </section>
 
 <!--        footer section -->
