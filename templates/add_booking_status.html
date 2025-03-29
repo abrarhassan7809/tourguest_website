@@ -137,7 +137,7 @@
                 <div class="card booking_event_card">
                     <div class="card-body">
                         <h4 class="font-weight-bolder text-center mt-2 mb-4">Add Status</h4>
-                        <form method="post" action="/add_booking_status/{{ data_id }}/" enctype="multipart/form-data">
+                        <form method="post" action="/add_booking_status/{{ data_id }}/{{ day_id }}/" enctype="multipart/form-data">
                             <div class="input-group input-group-outline my-3">
                                 <input type="text" name="agent_name" placeholder="Agent Name" class="form-control" required>
                             </div>

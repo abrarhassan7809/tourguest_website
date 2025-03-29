@@ -126,39 +126,30 @@
 
 <!--  booking status update section -->
     <section class="container mb-4">
-        {% if not booking_days_events %}
+        {% if not show_all_booking %}
         <div class="mt-3">
-            <a href="/add_booking_status/{{ data_id }}/" class="btn add_event_btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Event Status</a>
+            <a href="/add_booking_status/{{ data_id }}/{{ day_id }}/" class="btn add_event_btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Event Status</a>
         </div>
         {% endif %}
 
         <div class="booking_status_update mt-4">
-            {% for booking_event in booking_days_events %}
+            {% for booking_event in all_days_events %}
             <div class="card mb-4">
                 <div id="carousel_{{ loop.index }}" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
-                        {% for image_url in booking_event.day_event_images %}
-                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        {% for i in range(0, booking_event.day_event_images|length, 3) %}
+                        <div class="carousel-item {% if i == 0 %}active{% endif %}">
                             <div class="row" style="background: #fff; border-bottom: 2px solid rgba(236, 139, 2, 0.9);">
-                                <div class="col-md-12">
-                                    <img class="d-block w-100 carousel-img" src="{{ image_url }}" alt="Event Image" data-toggle="modal" data-target="#imageModal">
-                                </div>
+                                {% for j in range(3) %}
+                                    {% set img_index = i + j %}
+                                    {% set image_url = booking_event.day_event_images[img_index] if img_index < booking_event.day_event_images|length else '/static/default.jpg' %}
+                                    <div class="col-md-4">
+                                        <img class="d-block w-100 carousel-img" src="{{ image_url }}" alt="Event Image" data-toggle="modal" data-target="#imageModal">
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
                         {% endfor %}
-<!--                        <div class="carousel-item" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">-->
-<!--                            <div class="row" style="background: #fff; border-bottom: 2px solid rgba(236, 139, 2, 0.9);">-->
-<!--                                <div class="col-md-4">-->
-<!--                                    <img class="d-block w-100 carousel-img" src="/static/images/tour_image1.jpg" alt="First slide" data-toggle="modal" data-target="#imageModal">-->
-<!--                                </div>-->
-<!--                                <div class="col-md-4">-->
-<!--                                    <img class="d-block w-100 carousel-img" src="/static/images/tour_image1.jpg" alt="Second slide" data-toggle="modal" data-target="#imageModal">-->
-<!--                                </div>-->
-<!--                                <div class="col-md-4">-->
-<!--                                    <img class="d-block w-100 carousel-img" src="/static/images/tour_image1.jpg" alt="Third slide" data-toggle="modal" data-target="#imageModal">-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
                     </div>
                     <a class="carousel-control-prev" href="#carousel_{{ loop.index }}" role="button" data-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>

@@ -136,7 +136,7 @@
             <div class="card-body">
                 <h5 class="card-title">Day {{ loop.index }}</h5>
                 <p class="card-text">{{ booking_data.booking_day_details }}</p>
-                <a href="/booking_status/{{ booking_data.id }}/updates/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
+                <a href="/booking_status/{{ booking_data.id }}/{{ booking_data.id }}/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
             </div>
         </div>
         {% endfor %}

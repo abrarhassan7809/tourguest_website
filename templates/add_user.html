@@ -157,7 +157,7 @@
                                 <input type="text" name="country" placeholder="Select Country" class="form-control ml-2" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="text" name="country" placeholder="Select Country" class="form-control" required>
+                                <input type="text" name="city" placeholder="Select City" class="form-control" required>
                                 <input type="number" name="zip_code" placeholder="Zip Code" class="form-control ml-2" required>
                             </div>
 
@@ -204,5 +204,23 @@
         </div>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          var errorAlerts = document.querySelectorAll(".alert-danger");
+          var successAlerts = document.querySelectorAll(".alert-success");
+
+          errorAlerts.forEach(function (errorAlert) {
+              setTimeout(function () {
+                  errorAlert.style.display = "none";
+              }, 2000);
+          });
+
+          successAlerts.forEach(function (successAlert) {
+              setTimeout(function () {
+                  successAlert.style.display = "none";
+              }, 2000);
+          });
+        });
+    </script>
 </body>
 </html>

@@ -66,6 +66,7 @@ class BookingDayEvents(Base):
     __tablename__ = "booking_day_events"
     id = Column(Integer, primary_key=True, autoincrement=True)
     agent_name = Column(JSON, unique=False, nullable=False)
+    day_number = Column(Integer, unique=False, nullable=False)
     day_event_images = Column(JSON, unique=False, nullable=False)
     day_event_details = Column(String, unique=False, nullable=False)
 
