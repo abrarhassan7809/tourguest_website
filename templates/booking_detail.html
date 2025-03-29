@@ -84,6 +84,15 @@
             background: rgba(60, 88, 94, 0.9);
             color: #fff;
         }
+
+        .footer_section {
+            position: static;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(236, 139, 2, 0.9);
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -116,7 +125,7 @@
                         Profile
                     </button>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="/update_profile/data_id/">Profile</a>
+                        <a class="dropdown-item" href="/update_profile/">Profile</a>
                         <a class="dropdown-item" href="/logout/">Log Out</a>
                     </div>
                 </div>
@@ -130,8 +139,8 @@
         <div class="card mb-4">
             <div class="card-header d-flex">
                 <h5 class="">{{ booking_data.day_title }}</h5>
-                <a href="" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 20px;">Edit</a>
-                <a href="" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 20px;">Delete</a>
+<!--                <a href="" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 20px;">Edit</a>-->
+<!--                <a href="" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 20px;">Delete</a>-->
             </div>
             <div class="card-body">
                 <h5 class="card-title">Day {{ loop.index }}</h5>
@@ -143,7 +152,7 @@
     </section>
 
 <!--        footer section -->
-    <footer class="footer_section" style="background: rgba(236, 139, 2, 0.9);">
+    <footer class="footer_section">
         <div class="container pt-2">
             <hr style="border: 1px solid gray;">
             <div class="row m-0" style="height: 40px;">

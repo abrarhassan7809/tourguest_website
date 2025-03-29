@@ -74,6 +74,15 @@
             text-align: center;
             padding: 5px 20px;
         }
+
+        .footer_section {
+            position: static;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(236, 139, 2, 0.9);
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -90,13 +99,13 @@
                         <a class="nav-link" href="/home/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/booking/">Bookings</a>
+                        <a class="nav-link" href="/booking/">Bookings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/booking_status/">Guest Status</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/users/">Users</a>
+                        <a class="nav-link active" href="/users/">Users</a>
                     </li>
                 </ul>
 
@@ -106,7 +115,7 @@
                         Profile
                     </button>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="/update_profile/data_id/">Profile</a>
+                        <a class="dropdown-item" href="/update_profile/">Profile</a>
                         <a class="dropdown-item" href="/logout/">Log Out</a>
                     </div>
                 </div>
@@ -132,28 +141,27 @@
         </div>
 
         <div class="row m-0">
-            <div class="col-md-4 mx-auto my-4">
+            <div class="col-md-4 mx-auto my-5">
                 <div class="card update_profile_card">
                     <div class="card-body">
                         <h4 class="font-weight-bolder text-center mt-2 mb-4">Update Profile</h4>
-                        <form method="post" action="/update_profile/data_id/" enctype="multipart/form-data">
+                        {% if admin_data %}
+                        <form method="post" action="/update_profile/" enctype="multipart/form-data">
                             <div class="input-group input-group-outline my-3">
-                                <input type="text" name="name" placeholder="Name" class="form-control" required>
+                                <input type="text" name="name" placeholder="Name" value="{{ admin_data.name }}" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="email" name="email" placeholder="Email" class="form-control" required>
+                                <input type="email" name="email" placeholder="Email" value="{{ admin_data.email }}" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="text" name="mobile_number" placeholder="Mobile Number" class="form-control" required>
-                            </div>
-                            <div class="input-group input-group-outline mb-3">
-                                <input type="password" name="password" placeholder="Password" class="form-control" required>
+                                <input type="password" name="password" placeholder="New Password (if required)" class="form-control">
                             </div>
 
-                            <div class="text-center">
+                            <div class="text-center mb-3">
                                 <button type="submit" class="btn my-4 mb-2 update_profile_btn">Update</button>
                             </div>
                         </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -161,7 +169,7 @@
     </section>
 
 <!--        footer section -->
-    <footer class="footer_section" style="background: rgba(236, 139, 2, 0.9);">
+    <footer class="footer_section">
         <div class="container pt-2">
             <hr style="border: 1px solid gray;">
             <div class="row m-0" style="height: 40px;">
@@ -174,5 +182,23 @@
         </div>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          var errorAlerts = document.querySelectorAll(".alert-danger");
+          var successAlerts = document.querySelectorAll(".alert-success");
+
+          errorAlerts.forEach(function (errorAlert) {
+              setTimeout(function () {
+                  errorAlert.style.display = "none";
+              }, 2000);
+          });
+
+          successAlerts.forEach(function (successAlert) {
+              setTimeout(function () {
+                  successAlert.style.display = "none";
+              }, 2000);
+          });
+        });
+    </script>
 </body>
 </html>

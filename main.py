@@ -171,7 +171,9 @@ def users_api(request: Request, db: Session = Depends(get_db)):
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
-        return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_admin})
+        all_users = get_all_db_data_with(db, tour_models.Agents, tour_models.Agents.is_admin, False)
+        return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_admin,
+                                                         "all_users": all_users})
 
 @app.post('/users/', status_code=status.HTTP_200_OK)
 def users_api(request: Request, db: Session = Depends(get_db)):
@@ -181,7 +183,9 @@ def users_api(request: Request, db: Session = Depends(get_db)):
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
-        return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_admin})
+        all_users = get_all_db_data_with(db, tour_models.Agents, tour_models.Agents.is_admin, False)
+        return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_admin,
+                                                         "all_users": all_users})
 
 @app.get('/add_user/', status_code=status.HTTP_200_OK)
 def add_user_api(request: Request, db: Session = Depends(get_db)):
@@ -229,25 +233,131 @@ def add_user_api(request: Request, agency_name: str = Form(...), address: str = 
             print(e)
             return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin, "error": f"Something went wrong: {str(e)}"})
 
-@app.get('/update_profile/data_id/', status_code=status.HTTP_200_OK)
-def update_profile_api(request: Request, db: Session = Depends(get_db)):
+@app.get('/update_user/{data_id}/', status_code=status.HTTP_200_OK)
+def update_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
     if not is_token:
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if is_admin:
+        user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
+        return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                            "user_data": user_data})
 
-    return templates.TemplateResponse("update_profile.html", {"request": request, "admin_data": is_admin})
+@app.post('/update_user/{data_id}/', status_code=status.HTTP_200_OK)
+def update_user_api(request: Request, data_id: int, agency_name: str = Form(...), address: str = Form(...),
+                    website: str = Form(...), country: str = Form(...), city: str = Form(...),
+                    zip_code: int = Form(...), agent_name: str = Form(...), user_name: str = Form(...),
+                    mobile_number: str = Form(...), email: str = Form(...), confirm_email: str = Form(...),
+                    password: str = Form(None), confirm_password: str = Form(None), db: Session = Depends(get_db)):
+    is_token = request.cookies.get('token')
+    if not is_token:
+        return RedirectResponse(url=app.url_path_for('login_api'))
 
-@app.post('/update_profile/data_id/', status_code=status.HTTP_200_OK)
-def update_profile_api(request: Request, db: Session = Depends(get_db)):
+    is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
+    # Fetch existing user
+    user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
+    if not user_data:
+        return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                            "error": "User not found."})
+
+    # Prevent updating to an already existing email
+    if email != user_data.email:
+        user_exist = get_one_db_data(db, tour_models.Agents, tour_models.Agents.email, email)
+        if user_exist:
+            return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                                "error": "User with this email already exists."})
+
+    # Ensure password match only if provided
+    if password and password != confirm_password:
+        return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                            "error": "Passwords do not match."})
+
+    try:
+        # Update user details
+        user_data.agency_name = agency_name
+        user_data.address = address
+        user_data.website = website
+        user_data.country = country
+        user_data.city = city
+        user_data.zip_code = str(zip_code)
+        user_data.agent_name = agent_name
+        user_data.user_name = user_name
+        user_data.mobile_number = mobile_number
+        user_data.email = email
+
+        # Update password only if changed
+        if password:
+            user_data.password = Hash.argon2(password)
+
+        db.commit()
+        db.refresh(user_data)
+
+        return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                            "user_data": user_data,
+                                                            "success": "User updated successfully."})
+    except Exception as e:
+        db.rollback()
+        return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                            "user_data": user_data,
+                                                            "error": f"Something went wrong: {str(e)}"})
+
+@app.get('/delete_user/{data_id}/', status_code=status.HTTP_200_OK)
+def delete_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
     if not is_token:
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
+        user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
+        if user_data:
+            db.delete(user_data)
+            db.commit()
+
+        return RedirectResponse(url=app.url_path_for("users_api"))
+
+@app.get('/update_profile/', status_code=status.HTTP_200_OK)
+def update_profile_api(request: Request, db: Session = Depends(get_db)):
+    is_token = request.cookies.get('token')
+    if not is_token:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
+    is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if is_admin:
         return templates.TemplateResponse("update_profile.html", {"request": request, "admin_data": is_admin})
+
+@app.post('/update_profile/', status_code=status.HTTP_200_OK)
+def update_profile_api(request: Request, name: str = Form(...), email: str = Form(...), password: str = Form(...),
+                       db: Session = Depends(get_db)):
+    is_token = request.cookies.get('token')
+    if not is_token:
+        return RedirectResponse(url=app.url_path_for('login_api'))
+
+    is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if is_admin:
+        try:
+            # Update user details
+            is_admin.name = name
+            is_admin.email = email
+
+            # Update password only if changed
+            if password:
+                is_admin.password = Hash.argon2(password)
+
+            db.commit()
+            db.refresh(is_admin)
+
+            return templates.TemplateResponse("update_profile.html", {"request": request, "admin_data": is_admin,
+                                                                "success": "Profile updated successfully."})
+        except Exception as e:
+            db.rollback()
+            return templates.TemplateResponse("update_profile.html", {"request": request, "admin_data": is_admin,
+                                                                "error": f"Something went wrong: {str(e)}"})
 
 # ========booking apis=========
 @app.get('/booking/', status_code=status.HTTP_200_OK)

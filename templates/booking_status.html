@@ -76,13 +76,13 @@
             box-shadow: 5px 5px 10px #888888;
         }
 
-        .add_detail_btn {
+        .footer_section {
+            position: static;
+            bottom: 0;
+            left: 0;
+            width: 100%;
             background: rgba(236, 139, 2, 0.9);
-            color: #fff;
-        }
-        .add_detail_btn:hover {
-            background: rgba(60, 88, 94, 0.9);
-            color: #fff;
+            text-align: center;
         }
     </style>
 </head>
@@ -116,7 +116,7 @@
                         Profile
                     </button>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="/update_profile/data_id/">Profile</a>
+                        <a class="dropdown-item" href="/update_profile/">Profile</a>
                         <a class="dropdown-item" href="/logout/">Log Out</a>
                     </div>
                 </div>
@@ -133,6 +133,9 @@
         {% endif %}
 
         <div class="booking_status_update mt-4">
+            {% if not all_days_events %}
+                <h4>No Booking Status Found!</h4>
+            {% endif %}
             {% for booking_event in all_days_events %}
             <div class="card mb-4">
                 <div id="carousel_{{ loop.index }}" class="carousel slide" data-ride="carousel">
@@ -188,7 +191,7 @@
     </div>
 
 <!--        footer section -->
-    <footer class="footer_section" style="background: rgba(236, 139, 2, 0.9);">
+    <footer class="footer_section">
         <div class="container pt-2">
             <hr style="border: 1px solid gray;">
             <div class="row m-0" style="height: 40px;">
