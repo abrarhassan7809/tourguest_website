@@ -104,9 +104,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/booking_status/">Guest Status</a>
                     </li>
+                    {% if not is_agent %}
                     <li class="nav-item">
                         <a class="nav-link active" href="/users/">Users</a>
                     </li>
+                    {% endif %}
                 </ul>
 
                 <!-- Profile Dropdown -->

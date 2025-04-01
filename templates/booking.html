@@ -75,6 +75,10 @@
             transition: transform 0.3s;
             box-shadow: 5px 5px 10px #888888;
         }
+        .booking_img {
+            border-radius: 20px 20px 0 0;
+            height: 250px;
+        }
 
         .footer_section {
             position: static;
@@ -105,9 +109,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/booking_status/">Guest Status</a>
                     </li>
+                    {% if not is_agent %}
                     <li class="nav-item">
                         <a class="nav-link" href="/users/">Users</a>
                     </li>
+                    {% endif %}
                 </ul>
 
                 <!-- Profile Dropdown -->
@@ -126,9 +132,11 @@
 
 <!--  booking section -->
     <section class="container mb-4">
+        {% if not is_agent %}
         <div class="mt-3">
             <a href="/add_booking/" class="btn add_event_btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Booking</a>
         </div>
+        {% endif %}
         <div class="package_section mt-3">
             {% if not all_booking_data %}
                 <h4>No Booking Status Found!</h4>
@@ -139,9 +147,9 @@
                 <div class="col-4">
                     <div class="card">
                         {% if booking.booking_image[0] %}
-                            <img src="/{{ booking.booking_image[0] }}"  style="border-radius: 20px 20px 0 0;" alt="{{ booking.booking_title }}">
+                            <img src="/{{ booking.booking_image[0] }}" class="booking_img" alt="{{ booking.booking_title }}">
                         {% else %}
-                            <img src="/static/images/tour_image1.jpg"  style="border-radius: 20px 20px 0 0;" alt="{{ booking.booking_title }}">
+                            <img src="/static/images/tour_image1.jpg" class="booking_img" alt="{{ booking.booking_title }}">
                         {% endif %}
                         <div class="card-body">
                             <div class="d-flex">

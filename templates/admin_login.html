@@ -45,9 +45,9 @@
         <div class="row m-0">
             <div class="mx-auto my-5">
                 <div class="card login-card">
-                    <div class="card-body py-5">
+                    <div class="card-body">
                         <h4 class="font-weight-bolder text-center mt-2 mb-4">Login</h4>
-                        <form method="post" action="/home/">
+                        <form method="post" action="/admin_login/">
                             <div class="input-group input-group-outline my-3">
                                 <input type="email" name="email" placeholder="Email" class="form-control" required>
                             </div>
@@ -55,9 +55,12 @@
                                 <input type="password" name="password" placeholder="Password" class="form-control" required>
                             </div>
 
-                            <div class="text-center my-5">
-                                <button type="submit" class="btn w-50 login-btn">Login</button>
+                            <div class="text-center">
+                                <button type="submit" class="btn w-50 my-4 mb-2 login-btn">Login</button>
                             </div>
+                            <p class="mt-4 text-sm text-center">Don't have an account?
+                                <a href="/register/" class="text-light text-gradient font-weight-bold">Register</a>
+                            </p>
                         </form>
                     </div>
                 </div>
