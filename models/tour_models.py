@@ -25,9 +25,9 @@ class Agents(Base):
     city = Column(String, unique=False, nullable=False)
     zip_code = Column(String, unique=False, nullable=False)
     name = Column(String, unique=False, nullable=False)
-    # user_name = Column(String, unique=False, nullable=False)
     mobile_number = Column(String, unique=False, nullable=False)
     email = Column(String, unique=True, nullable=False)
+    user_name = Column(String, unique=False, nullable=False)
     password = Column(String, unique=False, nullable=False)
     user_token = Column(String, nullable=True)
 
@@ -66,6 +66,7 @@ class BookingDayEvents(Base):
     __tablename__ = "booking_day_events"
     id = Column(Integer, primary_key=True, autoincrement=True)
     agent_name = Column(JSON, unique=False, nullable=False)
+    booking_title = Column(String, unique=False, nullable=False)
     day_number = Column(Integer, unique=False, nullable=False)
     day_event_images = Column(JSON, unique=False, nullable=False)
     day_event_details = Column(String, unique=False, nullable=False)

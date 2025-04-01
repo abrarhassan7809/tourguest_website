@@ -136,6 +136,7 @@
                             <th scope="col">Email</th>
                             <th scope="col">Phone Number</th>
                             <th scope="col">Role</th>
+                            <th scope="col">Status</th>
                             <th scope="col" style="text-align: center">Actions</th>
                         </tr>
                     </thead>
@@ -143,11 +144,12 @@
                         {% for user in all_users %}
                         <tr>
                             <th scope="row">{{ loop.index }}</th>
-                            <td>{{ user.agent_name }}</td>
+                            <td>{{ user.agency_name }}</td>
                             <td>{{ user.email }}</td>
                             <td>{{ user.mobile_number }}</td>
-                            <td>{% if not user.is_admin %}Agent{% else %}Admin{% endif %}</td>
-                            <td style="text-align: center"><a href="/update_user/{{ user.id }}/" class="btn btn-sm btn-info">Edit</a> <a href="/delete_user/{{ user.id }}/" class="btn btn-sm btn-danger">Delete</a></td>
+                            <td>{% if user.is_admin %}Admin{% else %}Agent{% endif %}</td>
+                            <td>{% if user.user_status %}Active{% else %}Deactive{% endif %}</td>
+                            <td style="text-align: center"><a href="/active_user/{{ user.id }}/" class="btn btn-sm btn-info">active</a> <a href="/deactive_user/{{ user.id }}/" class="btn btn-sm btn-danger">deactive</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
