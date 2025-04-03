@@ -152,7 +152,7 @@
                         <form method="post" action="/add_booking_days/{{ data_id }}/" enctype="multipart/form-data">
                             <h4 class="font-weight-bolder text-center mt-2 mb-4">Booking Day</h4>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="text" name="booking_title" placeholder="Booking Title" class="form-control" required>
+                                <input type="text" name="booking_title" placeholder="Booking Title" value="{{ booking_data.booking_title }}" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
                                 <input type="file" name="images" class="form-control" multiple required>

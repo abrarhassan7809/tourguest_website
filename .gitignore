@@ -3,4 +3,6 @@ venv
 .idea
 __pycache__
 static/tour_website.pdf
+static/uploads
+static/Copy of Track my Guest .pdf
 tour_database.db

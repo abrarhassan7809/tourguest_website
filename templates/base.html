@@ -191,13 +191,19 @@
                                 {% endif %}
                                 <div class="card-body">
                                     <div class="d-flex">
-                                        <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">{{ booking.booking_title }}</h5>
+                                        <h5 class="card-title" style="color: rgba(60, 88, 94, 0.9);">{{ booking.booking_title[:30] }}{% if booking.booking_title|length > 30 %}...{% endif %}</h5>
                                         <a href="" class="ml-auto"><i class="fa-regular fa-heart fa-lg"></i></a>
                                     </div>
-                                    <p class="card-text">{{ booking.booking_details[:100] }}{% if booking.booking_details|length > 100 %}...{% endif %}</p>
+                                    <p class="card-text">{{ booking.booking_details[:60] }}{% if booking.booking_details|length > 60 %}...{% endif %}</p>
                                     <div class="">
                                         <a href="/booking/{{ booking.id }}/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">{{ booking.book_days }} Days</a>
-                                        <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">{{ 'Active' if booking.booking_status else 'Inactive' }}</span>
+                                        {% if booking.check_in_date <= current_date <= booking.check_out_date %}
+                                            <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">Active</span>
+                                        {% elif booking.check_out_date > current_date %}
+                                            <span class="badge badge-pill badge-primary" style="padding: 10px; float: right;">Will be Active</span>
+                                        {% else %}
+                                            <span class="badge badge-pill badge-warning" style="padding: 10px; float: right;">Was Active</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

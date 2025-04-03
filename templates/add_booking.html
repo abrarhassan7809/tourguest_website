@@ -153,9 +153,9 @@
                             <h4 class="font-weight-bolder text-center mt-2 mb-4">New Booking</h4>
                             <div class="input-group input-group-outline my-3">
                                 <select name="agent_name" class="form-control" required>
-                                    <option value="" disabled selected>Select agent</option>
+                                    <option value="" disabled selected>Select agency</option>
                                     {% for agent in agents_data %}
-                                        <option value="{{ agent.name }}">{{ agent.name }}</option>
+                                        <option value="{{ agent.name }}">{{ agent.agency_name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -163,10 +163,10 @@
                                 <input type="text" name="booking_title" placeholder="Booking Title" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="datetime-local" name="check_in_date" placeholder="Check In Date" class="form-control" required>
+                                <input type="date" name="check_in_date" placeholder="Check In Date" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="datetime-local" name="check_out_date" value="06-01-2017T08:30" placeholder="Check Out Date" class="form-control" required>
+                                <input type="date" name="check_out_date" value="06-01-2017T08:30" placeholder="Check Out Date" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
                                 <input type="file" name="images" class="form-control" multiple required>

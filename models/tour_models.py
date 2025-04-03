@@ -51,6 +51,7 @@ class Bookings(Base):
     booking_status = Column(Boolean, default=False)
 
     admin_id = Column(Integer, ForeignKey("admin.id", ondelete="CASCADE"), nullable=False)
+    # agent_id = Column(Integer, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
 
 
 class BookingDays(Base):
