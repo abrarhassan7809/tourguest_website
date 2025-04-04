@@ -1,3 +1,7 @@
+import shutil
+import uuid
+
+from fastapi import UploadFile
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -26,3 +30,12 @@ def get_all_db_data_and_with(db: Session, table, compair_with1, compair_with2, c
 def get_all_db_data(db: Session, table):
     db_data = db.query(table).all()
     return db_data
+
+
+def save_image(upload_dir, file: UploadFile):
+    file_ext = file.filename.split(".")[-1]  # Get file extension
+    unique_filename = f"{uuid.uuid4()}.{file_ext}"  # Generate unique filename
+    file_path = upload_dir / unique_filename
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return f"/static/home_images/{unique_filename}"

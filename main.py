@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 from db_functions.db_function import (get_one_db_data, add_data_in_db, get_all_db_data_with, get_all_db_data,
-                                      get_all_db_data_and_with)
+                                      get_all_db_data_and_with, save_image)
 from user_auth.auth_token import create_token
 from user_auth.email_and_pass_verification import email_checker
 from user_auth.password_hashing import Hash
@@ -91,8 +91,9 @@ def admin_login_api(request: Request, db: Session = Depends(get_db)):
             admin_exist = db.query(tour_models.Admin).filter(tour_models.Admin.email == 'admin123@gmail.com').first()
             if not admin_exist:
                 current_time = datetime.datetime.now()
-                new_admin = tour_models.Admin(name="Admin", email="admin123@gmail.com", password=Hash.argon2("admin123"),
-                                              user_token="", created_at=current_time, is_admin=True, user_status=False)
+                new_admin = tour_models.Admin(name="Alpha Excursion team", email="admin123@gmail.com",
+                                              password=Hash.argon2("admin123"), user_token="", created_at=current_time,
+                                              is_admin=True, user_status=False)
                 db.add(new_admin)
                 db.commit()
                 db.refresh(new_admin)
@@ -167,6 +168,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
         all_booking_data = get_all_db_data(db, tour_models.Bookings)
+        home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -179,11 +181,13 @@ def home_api(request: Request, db: Session = Depends(get_db)):
             booking.check_out_date = booking.check_out_date.date()
         return templates.TemplateResponse("base.html", {"request": request, "admin_data": is_admin,
                                                         "current_date": datetime.date.today(),
+                                                        "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
         all_booking_data = get_all_db_data(db, tour_models.Bookings)
+        home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -196,6 +200,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
             booking.check_out_date = booking.check_out_date.date()
         return templates.TemplateResponse("base.html", {"request": request, "admin_data": is_agent, "is_agent": True,
                                                         "current_date": datetime.date.today(),
+                                                        "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
 @app.post('/home/', status_code=status.HTTP_200_OK)
@@ -643,7 +648,7 @@ def add_booking_api(request: Request, db: Session = Depends(get_db)):
                                                                "agents_data": agents_data})
 
 @app.post('/add_booking/', status_code=status.HTTP_200_OK)
-async def add_booking_api(request: Request, db: Session = Depends(get_db), agent_name: str = Form(...),
+async def add_booking_api(request: Request, db: Session = Depends(get_db), agent_id: int = Form(...),
                           booking_title: str = Form(...), check_in_date: str = Form(...),
                           check_out_date: str = Form(...), description: str = Form(...),
                           images: List[UploadFile] = File(...)):
@@ -680,11 +685,12 @@ async def add_booking_api(request: Request, db: Session = Depends(get_db), agent
                     buffer.write(await image.read())
                 image_paths.append(str(file_path))
 
-        # Create main booking record
-        new_booking = tour_models.Bookings(agent_name=agent_name, booking_title=booking_title, check_in_date=check_in,
-                                           check_out_date=check_out, booking_image=json.dumps(image_paths),
-                                           book_days=str(booking_days), booking_details=description,
-                                           booking_status=True, admin_id=is_admin.id)
+        agent_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, agent_id)
+        new_booking = tour_models.Bookings(agency_name=agent_data.agency_name, booking_title=booking_title,
+                                           check_in_date=check_in, check_out_date=check_out,
+                                           booking_image=json.dumps(image_paths), book_days=str(booking_days),
+                                           booking_details=description, booking_status=True, admin_id=is_admin.id,
+                                           agent_id=agent_id)
         db.add(new_booking)
         db.commit()
         db.refresh(new_booking)
@@ -1045,6 +1051,57 @@ async def add_booking_status_api(request: Request, data_id: int, day_id: int, ag
             return templates.TemplateResponse("add_booking_status.html", {"request": request, "admin_data": is_agent,
                                                                           "error": message, "data_id": data_id,
                                                                           "day_id": day_id, "is_agent": True})
+
+@app.get('/add_home_images/')
+def add_home_images(request: Request, db: Session = Depends(get_db)):
+    is_token = request.cookies.get('token')
+    if not is_token:
+        return RedirectResponse(url=app.url_path_for('login_api'))
+
+    is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if is_admin:
+        return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_admin})
+
+    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
+    if is_agent:
+        return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_agent,
+                                                                   "is_agent": True})
+
+@app.post('/add_home_images/')
+def add_home_images(request: Request, title_1: str = Form(...), title_2: str = Form(...), title_3: str = Form(...),
+                    description_1: str = Form(...), description_2: str = Form(...), description_3: str = Form(...),
+                    image_1: UploadFile = Form(...), image_2: UploadFile = Form(...), image_3: UploadFile = Form(...),
+                    db: Session = Depends(get_db)):
+    is_token = request.cookies.get('token')
+    if not is_token:
+        return RedirectResponse(url=app.url_path_for('login_api'))
+
+    is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if is_admin:
+        try:
+            upload_dir = Path("static/home_images")
+            upload_dir.mkdir(parents=True, exist_ok=True)
+
+            image_1_path = save_image(upload_dir, image_1)
+            image_2_path = save_image(upload_dir, image_2)
+            image_3_path = save_image(upload_dir, image_3)
+
+            home_images = tour_models.HomeImages(title_1=title_1, title_2=title_2, title_3=title_3,
+                                                 description_1=description_1, description_2=description_2,
+                                                 description_3=description_3, image_1=image_1_path,
+                                                 image_2=image_2_path, image_3=image_3_path)
+            add_data_in_db(db, home_images)
+            return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_admin,
+                                                                       "success": "Images add successfully!"})
+
+        except Exception as e:
+            return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_admin,
+                                                                       "error": f"Something went wrong! {e}"})
+
+    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
+    if is_agent:
+        return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_agent,
+                                                                   "is_agent": True})
 
 
 if __name__ == '__main__':

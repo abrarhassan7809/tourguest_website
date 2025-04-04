@@ -4,5 +4,6 @@ venv
 __pycache__
 static/tour_website.pdf
 static/uploads
+static/home_images
 static/Copy of Track my Guest .pdf
 tour_database.db

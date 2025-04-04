@@ -38,10 +38,24 @@ class Agents(Base):
     admin_id = Column(Integer, ForeignKey("admin.id", ondelete="CASCADE"), nullable=False)
 
 
+class HomeImages(Base):
+    __tablename__ = "home_images"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title_1 = Column(String, unique=False, nullable=False)
+    title_2 = Column(String, unique=False, nullable=False)
+    title_3 = Column(String, unique=False, nullable=False)
+    description_1 = Column(String, unique=False, nullable=False)
+    description_2 = Column(String, unique=False, nullable=False)
+    description_3 = Column(String, unique=False, nullable=False)
+    image_1 = Column(String, unique=False, nullable=False)
+    image_2 = Column(String, unique=False, nullable=False)
+    image_3 = Column(String, unique=False, nullable=False)
+
+
 class Bookings(Base):
     __tablename__ = "bookings"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    agent_name = Column(String, unique=False, nullable=False)
+    agency_name = Column(String, unique=False, nullable=False)
     booking_title = Column(String, unique=False, nullable=False)
     check_in_date = Column(TIMESTAMP, nullable=False)
     check_out_date = Column(TIMESTAMP, nullable=False)
@@ -51,7 +65,7 @@ class Bookings(Base):
     booking_status = Column(Boolean, default=False)
 
     admin_id = Column(Integer, ForeignKey("admin.id", ondelete="CASCADE"), nullable=False)
-    # agent_id = Column(Integer, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
+    agent_id = Column(Integer, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
 
 
 class BookingDays(Base):
