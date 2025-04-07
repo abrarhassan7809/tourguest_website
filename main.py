@@ -11,7 +11,7 @@ from user_auth.password_hashing import Hash
 from sqlalchemy.orm import Session
 from models import tour_models
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 import datetime
 import uvicorn
 import json
@@ -671,7 +671,10 @@ async def add_booking_api(request: Request, db: Session = Depends(get_db), agent
 
         # Calculate booking days
         booking_days = (check_out - check_in).days
-        if booking_days <= 0:
+
+        if booking_days >= 1:
+            booking_days = booking_days + 1
+        elif booking_days <= 0:
             booking_days = 1
 
         image_paths = []
@@ -726,7 +729,7 @@ def add_booking_days_api(request: Request, data_id: int, db: Session = Depends(g
 
 @app.post('/add_booking_days/{data_id}/', status_code=status.HTTP_200_OK)
 async def add_booking_days_api(request: Request, data_id: int, booking_title: str = Form(...),
-                               images: List[UploadFile] = File(...), description: str = Form(...),
+                               images: Optional[List[UploadFile]] = File(None), description: str = Form(...),
                                db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
     if not is_token:

@@ -171,7 +171,7 @@
 
                 <div class="card-body mt-2 mb-2">
                     <h5 class="card-title">Agent: {{ booking_event.agent_name }}</h5>
-                    <p class="card-text">{{ booking_event.day_event_details }}</p>
+                    <pre style="white-space: pre-wrap;" class="card-text">{{ booking_event.day_event_details }}</pre>
                 </div>
             </div>
             {% endfor %}
