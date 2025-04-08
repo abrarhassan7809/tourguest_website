@@ -245,14 +245,21 @@ def home_api(request: Request, db: Session = Depends(get_db)):
 
 # ========users apis=========
 @app.get('/users/', status_code=status.HTTP_200_OK)
-def users_api(request: Request, db: Session = Depends(get_db)):
+def users_api(request: Request, db: Session = Depends(get_db), search: str = None):
     is_token = request.cookies.get('token')
     if not is_token:
-        return RedirectResponse(url=app.url_path_for('logout'))
+        return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
-        all_users = get_all_db_data_with(db, tour_models.Agents, tour_models.Agents.is_admin, False)
+        if search:
+            # Filter users by agency name if search query is provided
+            all_users = get_all_db_data_with(db, tour_models.Agents, tour_models.Agents.is_admin, False,
+                                             agency_name=search)
+        else:
+            # Fetch all users if no search query
+            all_users = get_all_db_data_with(db, tour_models.Agents, tour_models.Agents.is_admin, False)
+
         return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_admin,
                                                          "all_users": all_users})
 

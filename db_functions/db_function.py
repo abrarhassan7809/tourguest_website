@@ -19,9 +19,13 @@ def get_one_db_data(db: Session, table, compair_with, compair_data):
     db_data = db.query(table).filter(compair_with == compair_data).first()
     return db_data
 
-def get_all_db_data_with(db: Session, table, compair_with, compair_data):
-    db_data = db.query(table).filter(compair_with == compair_data).all()
-    return db_data
+def get_all_db_data_with(db: Session, model, filter_column, filter_value, agency_name: str = None):
+    query = db.query(model).filter(filter_column == filter_value)
+
+    if agency_name:
+        query = query.filter(model.agency_name.ilike(f"%{agency_name}%"))  # Case-insensitive search
+
+    return query.all()
 
 def get_all_db_data_and_with(db: Session, table, compair_with1, compair_with2, compair_data1, compair_data2):
     db_data = db.query(table).filter(and_(compair_with1 == compair_data1, compair_with2 == compair_data2)).all()
