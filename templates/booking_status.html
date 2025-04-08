@@ -64,6 +64,11 @@
             color: black;
         }
 
+        .main_card {
+            border: 2px solid rgba(236, 139, 2, 0.9);
+            border-radius: 20px;
+            box-shadow: 3px 3px 5px #888888;
+        }
         .card {
             border: 2px solid rgba(236, 139, 2, 0.9);
             border-radius: 20px;
@@ -138,42 +143,52 @@
         {% endif %}
 
         <div class="booking_status_update mt-4">
-            {% if not all_days_events %}
+            {% if booking_event_map|length == 0 %}
                 <h4>No Booking Status Found!</h4>
             {% endif %}
-            {% for booking_event in all_days_events %}
-            <div class="card mb-4">
-                <div id="carousel_{{ loop.index }}" class="carousel slide" data-ride="carousel">
-                    <div class="carousel-inner" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
-                        {% for i in range(0, booking_event.day_event_images|length, 3) %}
-                        <div class="carousel-item {% if i == 0 %}active{% endif %}">
-                            <div class="row" style="background: #fff; border-bottom: 2px solid rgba(236, 139, 2, 0.9);">
-                                {% for j in range(3) %}
-                                    {% set img_index = i + j %}
-                                    {% set image_url = booking_event.day_event_images[img_index] if img_index < booking_event.day_event_images|length else '/static/default.jpg' %}
-                                    <div class="col-md-4">
-                                        <img class="d-block w-100 carousel-img" src="{{ image_url }}" alt="Event Image" data-toggle="modal" data-target="#imageModal">
+
+            {% for booking_id, events in booking_event_map.items() %}
+            <div class="main_card p-4 mb-4">
+                <h4>Booking Title: {{ booking_map[booking_id].booking_title }}</h4>
+                    {% for event_obj in events %}
+                        {% set booking_event = event_obj.event %}
+                        {% set day_title = event_obj.day_title %}
+
+                        <div class="card my-4">
+<!--                            <div class="card-header">{{ day_title }}</div>-->
+
+                            <div id="carousel_{{ loop.index }}" class="carousel slide" data-ride="carousel">
+                                <div class="carousel-inner" style="border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                                    {% for i in range(0, booking_event.day_event_images|length, 3) %}
+                                    <div class="carousel-item {% if i == 0 %}active{% endif %}">
+                                        <div class="row" style="background: #fff; border-bottom: 2px solid rgba(236, 139, 2, 0.9);">
+                                            {% for j in range(3) %}
+                                                {% set img_index = i + j %}
+                                                {% set image_url = booking_event.day_event_images[img_index] if img_index < booking_event.day_event_images|length else '/static/default.jpg' %}
+                                                <div class="col-md-4">
+                                                    <img class="d-block w-100" src="{{ image_url }}" alt="Event Image">
+                                                </div>
+                                            {% endfor %}
+                                        </div>
                                     </div>
-                                {% endfor %}
+                                    {% endfor %}
+                                </div>
+
+                                <a class="carousel-control-prev" href="#carousel_{{ loop.index }}" role="button" data-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                </a>
+                                <a class="carousel-control-next" href="#carousel_{{ loop.index }}" role="button" data-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                </a>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">Agent: {{ booking_event.agent_name }}</h5>
+                                <pre class="card-text">{{ booking_event.day_event_details }}</pre>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                    <a class="carousel-control-prev" href="#carousel_{{ loop.index }}" role="button" data-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#carousel_{{ loop.index }}" role="button" data-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                    </a>
+                    {% endfor %}
                 </div>
-
-                <div class="card-body mt-2 mb-2">
-                    <h5 class="card-title">Agent: {{ booking_event.agent_name }}</h5>
-                    <pre style="white-space: pre-wrap;" class="card-text">{{ booking_event.day_event_details }}</pre>
-                </div>
-            </div>
             {% endfor %}
         </div>
     </section>

@@ -10,3 +10,5 @@ python-multipart
 starlette
 Jinja2
 alembic
+a2wsgi
+argon2_cffi

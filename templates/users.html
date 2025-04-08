@@ -137,7 +137,7 @@
                 </form>
             </div>
             <div>
-                <a href="/users/" class="btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Clear</a>
+                <a href="/users/" class="btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Back</a>
             </div>
         </div>
         <div class="user_section mt-4">
@@ -147,6 +147,7 @@
                         <tr>
                             <th scope="col">#</th>
                             <th scope="col">Name</th>
+                            <th scope="col">User Name</th>
                             <th scope="col">Email</th>
                             <th scope="col">Phone Number</th>
                             <th scope="col">Role</th>
@@ -159,11 +160,12 @@
                         <tr>
                             <th scope="row">{{ loop.index }}</th>
                             <td>{{ user.agency_name }}</td>
+                            <td>{{ user.user_name }}</td>
                             <td>{{ user.email }}</td>
                             <td>{{ user.mobile_number }}</td>
                             <td>{% if user.is_admin %}Admin{% else %}Agent{% endif %}</td>
                             <td>{% if user.user_status %}Active{% else %}Deactive{% endif %}</td>
-                            <td style="text-align: center"><a href="/active_user/{{ user.id }}/" class="btn btn-sm btn-info">active</a> <a href="/deactive_user/{{ user.id }}/" class="btn btn-sm btn-danger">deactive</a></td>
+                            <td style="text-align: center"><a href="/active_user/{{ user.id }}/" class="btn btn-sm btn-info">active</a> <a href="/deactive_user/{{ user.id }}/" class="btn btn-sm btn-danger">deactive</a> <a href="/update_user/{{ user.id }}/" class="btn btn-sm btn-success">edit profile</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>

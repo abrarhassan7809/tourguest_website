@@ -72,7 +72,7 @@ class BookingDays(Base):
     __tablename__ = "booking_days"
     id = Column(Integer, primary_key=True, autoincrement=True)
     day_title = Column(String, unique=False, nullable=False)
-    booking_day_images = Column(JSON, unique=False, nullable=False)
+    booking_day_images = Column(JSON, unique=False, nullable=True)
     booking_day_details = Column(String, unique=False, nullable=False)
 
     booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"), nullable=False)
