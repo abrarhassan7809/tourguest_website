@@ -11,9 +11,14 @@ def add_data_in_db(db: Session, db_data):
     db.commit()
     db.refresh(db_data)
 
-def delete_db_data(db: Session, db_data):
-    db.delete(db_data)
-    db.commit()
+def delete_db_data(db: Session, table, compair_with, compair_data):
+    try:
+        db_data = db.query(table).filter(compair_with == compair_data).first()
+        db.delete(db_data)
+        db.commit()
+        return True
+    except Exception as e:
+        return False
 
 def get_one_db_data(db: Session, table, compair_with, compair_data):
     db_data = db.query(table).filter(compair_with == compair_data).first()

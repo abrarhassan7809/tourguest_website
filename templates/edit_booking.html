@@ -64,18 +64,17 @@
             color: black;
         }
 
-        .add_booking_card {
+        .card {
+            border: 2px solid rgba(236, 139, 2, 0.9);
             background: rgba(60, 88, 94, 0.91);
             border-radius: 20px;
             transition: transform 0.3s;
             box-shadow: 3px 3px 5px #888888;
         }
-        .next_btn, .prev_btn, .submit_btn {
-            background: rgba(46, 45, 45, 0.9);
-            color: white;
-            border-radius: 20px;
-            text-align: center;
-            padding: 5px 20px;
+        .card:hover {
+            transform: translateY(-10px);
+            transition: transform 0.3s;
+            box-shadow: 5px 5px 10px #888888;
         }
 
         .footer_section {
@@ -131,8 +130,8 @@
         </nav>
     </section>
 
-<!--  update booking section -->
-    <section class="add_booking_section">
+<!--  booking section -->
+    <section class="mb-4 edit_booking_section">
         <div>
             {% if error %}
             <div style="z-index: 9999;" class="col-md-12 alert alert-danger alert-dismissible mx-auto position-absolute top-0 start-0 end-0" role="alert">
@@ -149,32 +148,48 @@
         </div>
 
         <div class="row m-0">
-            <div class="col-md-5 mx-auto my-5">
-                <div class="card add_booking_card">
+            <div class="col-md-5 mx-auto my-4">
+                {% if booking_data %}
+                <div class="card">
                     <div class="card-body">
-                        <form method="post" action="/add_booking_days/{{ data_id }}/" enctype="multipart/form-data">
-                            <h4 class="font-weight-bolder text-center mt-2 mb-4">Booking Day</h4>
+                        <form method="post" action="/edit_booking/{{ data_id }}" enctype="multipart/form-data">
+                            <h4 class="font-weight-bolder text-center mt-2 mb-4">Edit Booking</h4>
+                            <div class="input-group input-group-outline my-3">
+                                <select name="agent_id" class="form-control">
+                                    <option value="" disabled selected>{{ booking_data.agency_name }}</option>
+                                    {% for agent in agents_data %}
+                                        <option value="{{ agent.id }}">{{ agent.agency_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                             <div class="input-group input-group-outline mb-3">
                                 <input type="text" name="booking_title" placeholder="Booking Title" value="{{ booking_data.booking_title }}" class="form-control" required>
                             </div>
-<!--                            <div class="input-group input-group-outline mb-3">-->
-<!--                                <input type="file" name="images" class="form-control" multiple>-->
-<!--                            </div>-->
                             <div class="input-group input-group-outline mb-3">
-                                <textarea name="description" placeholder="Description" class="form-control" rows="4" required></textarea>
+                                <input type="date" name="check_in_date" placeholder="Check In Date" value="{{ booking_data.check_in_date.strftime('%Y-%m-%d') }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="date" name="check_out_date" placeholder="Check Out Date" value="{{ booking_data.check_out_date.strftime('%Y-%m-%d') }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="file" name="images" class="form-control" multiple>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <textarea name="description" placeholder="Description" class="form-control" rows="4" required>{{ booking_data.booking_details }}</textarea>
                             </div>
 
                             <div class="text-center">
-                                <button type="submit" class="btn my-4 mb-2 submit_btn">Submit</button>
+                                <button type="submit" class="btn my-4 mb-2">Submit</button>
                             </div>
                         </form>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </section>
 
-<!--        footer section -->
+<!--  footer section -->
     <footer class="footer_section">
         <div class="container pt-2">
             <hr style="border: 1px solid gray;">
@@ -205,6 +220,6 @@
               }, 2000);
           });
         });
-    </script>
+</script>
 </body>
 </html>

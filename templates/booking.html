@@ -161,7 +161,11 @@
                             </div>
                             <p class="card-text">{{ booking.booking_details[:100] }}{% if booking.booking_details|length > 100 %}...{% endif %}</p>
                             <div class="">
-                                <a href="/booking/{{ booking.id }}/" class="btn" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">{{ booking.book_days }} Days</a>
+                                <a href="/booking/{{ booking.id }}/" class="btn btn-sm" style="background: rgba(60, 88, 94, 0.9); color: white; border-radius: 10px;">{{ booking.book_days }} Days</a>
+                                {% if not is_agent %}
+                                    <a href="/edit_booking/{{ booking.id }}/" class="btn btn-sm btn-success" style="border-radius: 10px;">edit</a>
+                                    <a href="/delete_booking/{{ booking.id }}/" class="btn btn-sm btn-danger" style="border-radius: 10px;">delete</a>
+                                {% endif %}
                                 {% if booking.check_in_date <= current_date <= booking.check_out_date %}
                                     <span class="badge badge-pill badge-success" style="padding: 10px; float: right;">Active</span>
                                 {% elif booking.check_out_date > current_date %}

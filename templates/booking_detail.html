@@ -159,20 +159,26 @@
             <a href="/add_booking_days/{{ data_id }}/" class="btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Booking Days</a>
         </div>
 
-        {% for booking_data in booking_days_data %}
-        <div class="card my-3">
-            <div class="card-header d-flex">
-                <h5 class="">{{ booking_data.day_title }}</h5>
-<!--                <a href="" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 20px;">Edit</a>-->
-<!--                <a href="" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 20px;">Delete</a>-->
+        {% if booking_days_data %}
+            {% for booking_data in booking_days_data %}
+            <div class="card my-3">
+                <div class="card-header d-flex">
+                    <h5 class="">{{ booking_data.day_title }}</h5>
+                    {% if not is_agent %}
+                        <a href="/edit_booking_day/{{ data_id }}/{{ booking_data.id }}/" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 10px;">Edit</a>
+                        <a href="/delete_booking_day/{{ data_id }}/{{ booking_data.id }}/" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 10px;">Delete</a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Day {{ loop.index }}</h5>
+                    <pre style="white-space: pre-wrap;" class="card-text">{{ booking_data.booking_day_details }}</pre>
+                    <a href="/booking_status/{{ data_id }}/{{ booking_data.id }}/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
+                </div>
             </div>
-            <div class="card-body">
-                <h5 class="card-title">Day {{ loop.index }}</h5>
-                <pre style="white-space: pre-wrap;" class="card-text">{{ booking_data.booking_day_details }}</pre>
-                <a href="/booking_status/{{ booking_data.id }}/{{ booking_data.id }}/" class="btn add_detail_btn" style="margin-left: auto; border-radius: 10px;">Add Details</a>
-            </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <h5 class="mt-2">No Booking details founds!</h5>
+        {% endif %}
     </section>
 
 <!--        footer section -->

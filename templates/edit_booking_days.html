@@ -70,7 +70,7 @@
             transition: transform 0.3s;
             box-shadow: 3px 3px 5px #888888;
         }
-        .next_btn, .prev_btn, .submit_btn {
+        .submit_btn {
             background: rgba(46, 45, 45, 0.9);
             color: white;
             border-radius: 20px;
@@ -150,18 +150,16 @@
 
         <div class="row m-0">
             <div class="col-md-5 mx-auto my-5">
+                {% if booking_day_data %}
                 <div class="card add_booking_card">
                     <div class="card-body">
-                        <form method="post" action="/add_booking_days/{{ data_id }}/" enctype="multipart/form-data">
-                            <h4 class="font-weight-bolder text-center mt-2 mb-4">Booking Day</h4>
+                        <form method="post" action="/edit_booking_day/{{ data_id }}/{{ booking_day_data.id }}/" enctype="multipart/form-data">
+                            <h4 class="font-weight-bolder text-center mt-2 mb-4">Edit Booking Day</h4>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="text" name="booking_title" placeholder="Booking Title" value="{{ booking_data.booking_title }}" class="form-control" required>
+                                <input type="text" name="day_title" placeholder="Booking Title" value="{{ booking_day_data.day_title }}" class="form-control" required>
                             </div>
-<!--                            <div class="input-group input-group-outline mb-3">-->
-<!--                                <input type="file" name="images" class="form-control" multiple>-->
-<!--                            </div>-->
                             <div class="input-group input-group-outline mb-3">
-                                <textarea name="description" placeholder="Description" class="form-control" rows="4" required></textarea>
+                                <textarea name="description" placeholder="Description" class="form-control" rows="4" required>{{ booking_day_data.booking_day_details }}</textarea>
                             </div>
 
                             <div class="text-center">
@@ -170,6 +168,7 @@
                         </form>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </section>
