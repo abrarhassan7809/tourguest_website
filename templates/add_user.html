@@ -189,10 +189,10 @@
                             <label class="info_tags">Password Setting</label>
                             <div class="input-group input-group-outline my-3">
                                 <input type="text" name="user_name" placeholder="User Name" class="form-control" value="{{ user_data.user_name }}" required>
-                                <input type="password" name="password" placeholder="New Password (Leave blank to keep current)" class="form-control ml-2">
+                                <input type="text" name="password" placeholder="New Password" value="{{ user_data.password }}" class="form-control ml-2" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="password" name="confirm_password" placeholder="Confirm New Password" class="form-control">
+                                <input type="text" name="confirm_password" placeholder="New Password" value="{{ user_data.password }}" class="form-control" required>
                             </div>
 
                             <div class="text-center">

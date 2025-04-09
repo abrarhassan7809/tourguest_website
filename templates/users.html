@@ -70,6 +70,11 @@
             transition: transform 0.3s;
             box-shadow: 3px 3px 5px #888888;
         }
+        .table-responsive-custom {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
 
         .footer_section {
             position: static;
@@ -142,34 +147,36 @@
         </div>
         <div class="user_section mt-4">
             <div class="card mb-5 p-3">
-                <table class="table table-light">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">User Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Phone Number</th>
-                            <th scope="col">Role</th>
-                            <th scope="col">Status</th>
-                            <th scope="col" style="text-align: center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in all_users %}
-                        <tr>
-                            <th scope="row">{{ loop.index }}</th>
-                            <td>{{ user.agency_name }}</td>
-                            <td>{{ user.user_name }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.mobile_number }}</td>
-                            <td>{% if user.is_admin %}Admin{% else %}Agent{% endif %}</td>
-                            <td>{% if user.user_status %}Active{% else %}Deactive{% endif %}</td>
-                            <td style="text-align: center"><a href="/active_user/{{ user.id }}/" class="btn btn-sm btn-info">active</a> <a href="/deactive_user/{{ user.id }}/" class="btn btn-sm btn-danger">deactive</a> <a href="/update_user/{{ user.id }}/" class="btn btn-sm btn-success">edit profile</a></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive-custom">
+                    <table class="table table-light">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">User Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Phone Number</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" style="text-align: center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in all_users %}
+                            <tr>
+                                <th scope="row">{{ loop.index }}</th>
+                                <td>{{ user.agency_name }}</td>
+                                <td>{{ user.user_name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.mobile_number }}</td>
+                                <td>{% if user.is_admin %}Admin{% else %}Agent{% endif %}</td>
+                                <td>{% if user.user_status %}Active{% else %}Deactive{% endif %}</td>
+                                <td style="text-align: center"><a href="/active_user/{{ user.id }}/" class="btn btn-sm btn-info">active</a> <a href="/deactive_user/{{ user.id }}/" class="btn btn-sm btn-danger">deactive</a> <a href="/update_user/{{ user.id }}/" class="btn btn-sm btn-success">edit profile</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>

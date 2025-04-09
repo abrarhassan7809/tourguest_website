@@ -136,7 +136,7 @@
 
 <!--  booking status update section -->
     <section class="container mb-4">
-        {% if not is_agent %}
+        {% if not is_agent and not edit_booking_status %}
         <div class="mt-3">
             <a href="/add_booking_status/{{ data_id }}/{{ day_id }}/" class="btn add_event_btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Event Status</a>
         </div>
@@ -189,7 +189,7 @@
                                     </div>
                                     <div class="ml-auto">
                                     {% if not is_agent and not edit_booking_status %}
-                                        <a href="/edit_booking_day_status/{{ data_id }}/{{ day_id }}/{{ booking_event.id }}/" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 10px;">Edit</a>
+                                        <a href="/edit_booking_day_status/{{ data_id }}/{{ booking_event.id }}/" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 10px;">Edit</a>
                                         <a href="/delete_booking_day_status/{{ data_id }}/{{ day_id }}/{{ booking_event.id }}/" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 10px;">Delete</a>
                                     {% endif %}
                                     </div>

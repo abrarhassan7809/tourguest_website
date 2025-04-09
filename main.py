@@ -148,7 +148,7 @@ def login_api(request: Request, user_name: str = Form(...), email: str = Form(..
     error = "User not exits/allowed!"
     if is_agent and is_agent.user_status:
         if email_checker(email):
-            if Hash.verify(password, is_agent.password):
+            if password:
                 is_agent.user_token = create_token()
                 db.commit()
 
@@ -189,7 +189,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        all_booking_data = get_all_db_data(db, tour_models.Bookings)
+        all_booking_data = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
         home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
@@ -231,7 +231,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        all_booking_data = get_all_db_data(db, tour_models.Bookings)
+        all_booking_data = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -256,7 +256,6 @@ def users_api(request: Request, db: Session = Depends(get_db), search: str = Non
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
         if search:
-            # Filter users by agency name if search query is provided
             all_users = get_all_db_data_with(db, tour_models.Agents, tour_models.Agents.is_admin, False,
                                              agency_name=search)
         else:
@@ -293,6 +292,9 @@ def add_user_api(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin})
 
@@ -307,6 +309,9 @@ def add_user_api(request: Request, agency_name: str = Form(...), address: str = 
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         if password != confirm_password:
             return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
@@ -318,11 +323,10 @@ def add_user_api(request: Request, agency_name: str = Form(...), address: str = 
                                                                 "error": "User already exists"})
 
         try:
-            hashed_password = Hash.argon2(password)
             created_time = datetime.datetime.now()
             user_data = tour_models.Agents(agency_name=agency_name, address=address, website=website, country=country,
                                            city=city, zip_code=str(zip_code), name=agent_name, email=email,
-                                           mobile_number=mobile_number, password=hashed_password, user_name=user_name,
+                                           mobile_number=mobile_number, password=password, user_name=user_name,
                                            created_at=created_time, admin_id=is_admin.id)
             db.add(user_data)
             db.commit()
@@ -382,6 +386,9 @@ def update_user_api(request: Request, data_id: int, db: Session = Depends(get_db
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
@@ -410,11 +417,12 @@ def update_user_api(request: Request, data_id: int, agency_name: str = Form(...)
         user_exist = get_one_db_data(db, tour_models.Agents, tour_models.Agents.email, email)
         if user_exist:
             return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
+                                                                "user_data": user_data,
                                                                 "error": "User with this email already exists."})
 
     if password and password != confirm_password:
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
-                                                            "error": "Passwords do not match."})
+                                                            "user_data": user_data, "error": "Passwords do not match."})
 
     try:
         user_data.agency_name = agency_name
@@ -427,9 +435,7 @@ def update_user_api(request: Request, data_id: int, agency_name: str = Form(...)
         user_data.user_name = user_name
         user_data.mobile_number = mobile_number
         user_data.email = email
-
-        if password:
-            user_data.password = Hash.argon2(password)
+        user_data.password = password
 
         db.commit()
         db.refresh(user_data)
@@ -449,12 +455,11 @@ def delete_user_api(request: Request, data_id: int, db: Session = Depends(get_db
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
-    if is_admin:
-        user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
-        if user_data:
-            db.delete(user_data)
-            db.commit()
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
 
+    if is_admin:
+        user_data = delete_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
         return RedirectResponse(url=app.url_path_for("users_api"))
 
 @app.get('/update_profile/', status_code=status.HTTP_200_OK)
@@ -545,7 +550,7 @@ def booking_api(request: Request, db: Session = Depends(get_db)):
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        all_booking_data = get_all_db_data(db, tour_models.Bookings)
+        all_booking_data = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -585,7 +590,7 @@ def booking_api(request: Request, db: Session = Depends(get_db)):
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        all_booking_data = get_all_db_data(db, tour_models.Bookings)
+        all_booking_data = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -606,6 +611,9 @@ def add_booking_api(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         agents_data = get_all_db_data(db, tour_models.Agents)
         return templates.TemplateResponse("add_booking.html", {"request": request, "admin_data": is_admin,
@@ -726,6 +734,9 @@ def edit_booking_api(request: Request, data_id: int, db: Session = Depends(get_d
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         agents_data = get_all_db_data(db, tour_models.Agents)
         booking_data = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
@@ -815,6 +826,9 @@ def delete_booking_api(request: Request, data_id: int, db: Session = Depends(get
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         booking_data = delete_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
         return RedirectResponse(url=app.url_path_for("booking_api"))
@@ -851,17 +865,6 @@ async def add_booking_days_api(request: Request, data_id: int, booking_title: st
 
     if is_admin:
         try:
-            # image_paths = []
-            # for image in images:
-            #     if image.filename:  # Only process if file was uploaded
-            #         timestamp = int(datetime.datetime.now().timestamp())
-            #         # Sanitize filename
-            #         safe_filename = "".join(c for c in image.filename if c.isalnum() or c in (' ', '.', '_')).rstrip()
-            #         file_path = upload_dir / f"{timestamp}_{safe_filename}"
-            #         with open(file_path, "wb") as buffer:
-            #             buffer.write(await image.read())
-            #         image_paths.append(str(file_path))
-
             booking_day = tour_models.BookingDays(day_title=booking_title, booking_day_details=description,
                                                   booking_id=data_id)
             db.add(booking_day)
@@ -883,17 +886,6 @@ async def add_booking_days_api(request: Request, data_id: int, booking_title: st
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
         try:
-            # image_paths = []
-            # for image in images:
-            #     if image.filename:  # Only process if file was uploaded
-            #         timestamp = int(datetime.datetime.now().timestamp())
-            #         # Sanitize filename
-            #         safe_filename = "".join(c for c in image.filename if c.isalnum() or c in (' ', '.', '_')).rstrip()
-            #         file_path = upload_dir / f"{timestamp}_{safe_filename}"
-            #         with open(file_path, "wb") as buffer:
-            #             buffer.write(await image.read())
-            #         image_paths.append(str(file_path))
-
             booking_day = tour_models.BookingDays(day_title=booking_title, booking_day_details=description,
                                                   booking_id=data_id)
             db.add(booking_day)
@@ -971,6 +963,9 @@ def delete_booking_day_api(request: Request, data_id: int, day_id: int, db: Sess
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         booking_data = delete_db_data(db, tour_models.BookingDays, tour_models.BookingDays.id, day_id)
         return RedirectResponse(url=app.url_path_for("booking_api"))
@@ -982,6 +977,9 @@ def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Dep
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         booking_days_data = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id,
                                                      data_id)
@@ -996,6 +994,9 @@ def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Dep
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         booking_days_data = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id,
                                                      data_id)
@@ -1009,45 +1010,60 @@ def booking_status_api(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
-    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
-    admin_data = None
     edit_booking_status = True
 
-    if not is_admin and not is_agent:
-        return RedirectResponse(url=app.url_path_for('logout'))
-
     if is_admin:
-        is_agent = False
-        admin_data = is_admin
+        bookings = get_all_db_data(db, tour_models.Bookings)
+        booking_days = get_all_db_data(db, tour_models.BookingDays)
+        events = get_all_db_data(db, tour_models.BookingDayEvents)
 
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str):
+                event.day_event_images = json.loads(event.day_event_images)
+
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                for booking in bookings:
+                    booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+
+        booking_map = {b.id: b for b in bookings}
+
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_admin,
+                                                                  "edit_booking_status": edit_booking_status,
+                                                                  "is_agent": False,
+                                                                  "booking_map": booking_map,
+                                                                  "booking_event_map": booking_event_map})
+
+    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        is_agent = True
-        admin_data = is_agent
+        bookings = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
+        booking_days = get_all_db_data(db, tour_models.BookingDays)
+        events = get_all_db_data(db, tour_models.BookingDayEvents)
 
-    all_bookings = get_all_db_data(db, tour_models.Bookings)
-    all_days = get_all_db_data(db, tour_models.BookingDays)
-    all_events = get_all_db_data(db, tour_models.BookingDayEvents)
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str):
+                event.day_event_images = json.loads(event.day_event_images)
 
-    # Parse images if stored as JSON strings
-    for event in all_events:
-        if isinstance(event.day_event_images, str):
-            event.day_event_images = json.loads(event.day_event_images)
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                for booking in bookings:
+                    booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
 
-    # Group events by booking ID
-    booking_event_map = defaultdict(list)
-    booking_day_map = {day.id: day for day in all_days}
-    booking_map = {booking.id: booking for booking in all_bookings}
+        booking_map = {b.id: b for b in bookings}
 
-    for event in all_events:
-        day = booking_day_map.get(event.booking_days_id)
-        if day:
-            booking_id = day.booking_id
-            booking_event_map[booking_id].append({"event": event, "day_title": day.day_title })
-
-    return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": admin_data,
-                                                              "edit_booking_status": edit_booking_status,
-                                                              "is_agent": is_agent, "booking_map": booking_map,
-                                                              "booking_event_map": booking_event_map})
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_agent,
+                                                                  "edit_booking_status": edit_booking_status,
+                                                                  "is_agent": True,
+                                                                  "booking_map": booking_map,
+                                                                  "booking_event_map": booking_event_map})
 
 @app.post('/booking_status/', status_code=status.HTTP_200_OK)
 def booking_status_api(request: Request, db: Session = Depends(get_db)):
@@ -1056,42 +1072,54 @@ def booking_status_api(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
-    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
-    admin_data = None
     edit_booking_status = True
 
-    if not is_admin and not is_agent:
-        return RedirectResponse(url=app.url_path_for('logout'))
-
     if is_admin:
-        is_agent = False
-        admin_data = is_admin
+        booking = get_all_db_data(db, tour_models.Bookings)
+        booking_days = get_all_db_data(db, tour_models.BookingDays)
+        events = get_all_db_data(db, tour_models.BookingDayEvents)
 
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str):
+                event.day_event_images = json.loads(event.day_event_images)
+
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_admin,
+                                                                  "edit_booking_status": edit_booking_status,
+                                                                  "is_agent": False,
+                                                                  "booking_map": {booking.id: booking},
+                                                                  "booking_event_map": booking_event_map})
+
+    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        is_agent = True
-        admin_data = is_agent
+        booking = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
+        booking_days = get_all_db_data(db, tour_models.BookingDays)
+        events = get_all_db_data(db, tour_models.BookingDayEvents)
 
-    booking = get_all_db_data(db, tour_models.Bookings)
-    booking_days = get_all_db_data(db, tour_models.BookingDays)
-    events = get_all_db_data(db, tour_models.BookingDayEvents)
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str):
+                event.day_event_images = json.loads(event.day_event_images)
 
-    # Convert image strings to lists
-    for event in events:
-        if isinstance(event.day_event_images, str):
-            event.day_event_images = json.loads(event.day_event_images)
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
 
-    # Organize events by booking
-    booking_event_map = defaultdict(list)
-    for event in events:
-        day = next((d for d in booking_days if d.id == event.booking_days_id), None)
-        if day:
-            booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
-
-    return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": admin_data,
-                                                              "edit_booking_status": edit_booking_status,
-                                                              "is_agent": is_agent,
-                                                              "booking_map": {booking.id: booking},
-                                                              "booking_event_map": booking_event_map})
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_agent,
+                                                                  "edit_booking_status": edit_booking_status,
+                                                                  "is_agent": True,
+                                                                  "booking_map": {booking.id: booking},
+                                                                  "booking_event_map": booking_event_map})
 
 @app.get('/booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1100,47 +1128,67 @@ def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Sess
         return RedirectResponse(url=app.url_path_for('logout'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
-    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
-    admin_data = None
-    is_agent_on = False
-
-    if not is_admin and not is_agent:
-        return RedirectResponse(url=app.url_path_for('logout'))
-
     if is_admin:
-        admin_data = is_admin
+        booking = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
+        booking_days = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id, data_id)
+        events = db.query(tour_models.BookingDayEvents).join(tour_models.BookingDays,
+                                                             tour_models.BookingDayEvents.booking_days_id == day_id
+                                                             ).filter(tour_models.BookingDays.booking_id == data_id).all()
 
-    if is_agent:
-        admin_data = is_agent
-        is_agent_on = True
-
-    booking = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
-    booking_days = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id, data_id)
-    events = db.query(tour_models.BookingDayEvents).join(tour_models.BookingDays,
-                                                         tour_models.BookingDayEvents.booking_days_id == day_id
-                                                         ).filter(tour_models.BookingDays.booking_id == data_id).all()
-
-    # Convert image strings to lists
-    for event in events:
-        if isinstance(event.day_event_images, str) and event.day_event_images.strip():
-            try:
-                event.day_event_images = json.loads(event.day_event_images)
-            except json.JSONDecodeError:
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str) and event.day_event_images.strip():
+                try:
+                    event.day_event_images = json.loads(event.day_event_images)
+                except json.JSONDecodeError:
+                    event.day_event_images = []
+            else:
                 event.day_event_images = []
-        else:
-            event.day_event_images = []
 
-    # Organize events by booking
-    booking_event_map = defaultdict(list)
-    for event in events:
-        day = next((d for d in booking_days if d.id == event.booking_days_id), None)
-        if day:
-            booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
 
-    return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": admin_data,
-                                                              "day_id": day_id, "is_agent": is_agent_on,
-                                                              "data_id": data_id, "booking_map": {booking.id: booking},
-                                                              "booking_event_map": booking_event_map})
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_admin,
+                                                                  "day_id": day_id, "is_agent": False,
+                                                                  "data_id": data_id,
+                                                                  "booking_map": {booking.id: booking},
+                                                                  "booking_event_map": booking_event_map})
+
+    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
+    if is_agent:
+        booking = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
+        booking_days = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id, data_id)
+        events = db.query(tour_models.BookingDayEvents).join(tour_models.BookingDays,
+                                                             tour_models.BookingDayEvents.booking_days_id == day_id
+                                                             ).filter(
+            tour_models.BookingDays.booking_id == data_id).all()
+
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str) and event.day_event_images.strip():
+                try:
+                    event.day_event_images = json.loads(event.day_event_images)
+                except json.JSONDecodeError:
+                    event.day_event_images = []
+            else:
+                event.day_event_images = []
+
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_agent,
+                                                                  "day_id": day_id, "is_agent": True,
+                                                                  "data_id": data_id,
+                                                                  "booking_map": {booking.id: booking},
+                                                                  "booking_event_map": booking_event_map})
 
 @app.post('/booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1149,47 +1197,68 @@ def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Sess
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
-    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
-    admin_data = None
-    is_agent_on = False
-
-    if not is_admin and not is_agent:
-        return RedirectResponse(url=app.url_path_for('logout'))
-
     if is_admin:
-        admin_data = is_admin
+        booking = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
+        booking_days = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id, data_id)
+        events = db.query(tour_models.BookingDayEvents).join(tour_models.BookingDays,
+                                                             tour_models.BookingDayEvents.booking_days_id == day_id
+                                                             ).filter(
+            tour_models.BookingDays.booking_id == data_id).all()
 
-    if is_agent:
-        admin_data = is_agent
-        is_agent_on = True
-
-    booking = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
-    booking_days = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id, data_id)
-    events = db.query(tour_models.BookingDayEvents).join(tour_models.BookingDays,
-                                                         tour_models.BookingDayEvents.booking_days_id == day_id
-                                                         ).filter(tour_models.BookingDays.booking_id == data_id).all()
-
-    # Convert image strings to lists
-    for event in events:
-        if isinstance(event.day_event_images, str) and event.day_event_images.strip():
-            try:
-                event.day_event_images = json.loads(event.day_event_images)
-            except json.JSONDecodeError:
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str) and event.day_event_images.strip():
+                try:
+                    event.day_event_images = json.loads(event.day_event_images)
+                except json.JSONDecodeError:
+                    event.day_event_images = []
+            else:
                 event.day_event_images = []
-        else:
-            event.day_event_images = []
 
-    # Organize events by booking
-    booking_event_map = defaultdict(list)
-    for event in events:
-        day = next((d for d in booking_days if d.id == event.booking_days_id), None)
-        if day:
-            booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
 
-    return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": admin_data,
-                                                              "day_id": day_id, "is_agent": is_agent_on,
-                                                              "data_id": data_id, "booking_map": {booking.id: booking},
-                                                              "booking_event_map": booking_event_map})
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_admin,
+                                                                  "day_id": day_id, "is_agent": False,
+                                                                  "data_id": data_id,
+                                                                  "booking_map": {booking.id: booking},
+                                                                  "booking_event_map": booking_event_map})
+
+    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
+    if is_agent:
+        booking = get_one_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
+        booking_days = get_all_db_data_with(db, tour_models.BookingDays, tour_models.BookingDays.booking_id, data_id)
+        events = db.query(tour_models.BookingDayEvents).join(tour_models.BookingDays,
+                                                             tour_models.BookingDayEvents.booking_days_id == day_id
+                                                             ).filter(
+            tour_models.BookingDays.booking_id == data_id).all()
+
+        # Convert image strings to lists
+        for event in events:
+            if isinstance(event.day_event_images, str) and event.day_event_images.strip():
+                try:
+                    event.day_event_images = json.loads(event.day_event_images)
+                except json.JSONDecodeError:
+                    event.day_event_images = []
+            else:
+                event.day_event_images = []
+
+        # Organize events by booking
+        booking_event_map = defaultdict(list)
+        for event in events:
+            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+            if day:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+
+        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_agent,
+                                                                  "day_id": day_id, "is_agent": True,
+                                                                  "data_id": data_id,
+                                                                  "booking_map": {booking.id: booking},
+                                                                  "booking_event_map": booking_event_map})
 
 @app.get('/add_booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def add_booking_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1368,6 +1437,9 @@ def delete_booking_day_status_api(request: Request, data_id: int, day_id: int, e
         return RedirectResponse(url=app.url_path_for('login_api'))
 
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
+    if not is_admin:
+        return RedirectResponse(url=app.url_path_for('logout'))
+
     if is_admin:
         booking_data = delete_db_data(db, tour_models.BookingDayEvents, tour_models.BookingDayEvents.id, event_id)
         return RedirectResponse(url=app.url_path_for("booking_day_status_api", data_id=data_id, day_id=day_id),
