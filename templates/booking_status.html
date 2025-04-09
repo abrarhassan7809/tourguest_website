@@ -136,7 +136,7 @@
 
 <!--  booking status update section -->
     <section class="container mb-4">
-        {% if not show_all_booking %}
+        {% if not is_agent %}
         <div class="mt-3">
             <a href="/add_booking_status/{{ data_id }}/{{ day_id }}/" class="btn add_event_btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Event Status</a>
         </div>
@@ -166,7 +166,7 @@
                                                 {% set img_index = i + j %}
                                                 {% set image_url = booking_event.day_event_images[img_index] if img_index < booking_event.day_event_images|length else '/static/default.jpg' %}
                                                 <div class="col-md-4">
-                                                    <img class="d-block w-100" src="{{ image_url }}" alt="Event Image">
+                                                    <img class="d-block w-100 event-image" src="{{ image_url }}" alt="Event Image" data-toggle="modal" data-target="#imageModal" onclick="showImageModal(this.src)">
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -183,8 +183,21 @@
                             </div>
 
                             <div class="card-body">
-                                <h5 class="card-title">Agent: {{ booking_event.agent_name }}</h5>
-                                <pre class="card-text">{{ booking_event.day_event_details }}</pre>
+                                <div class="d-flex">
+                                    <div>
+                                        <h5 class="card-title">Agent: {{ booking_event.agent_name }}</h5>
+                                    </div>
+                                    <div class="ml-auto">
+                                    {% if not is_agent and not edit_booking_status %}
+                                        <a href="/edit_booking_day_status/{{ data_id }}/{{ day_id }}/{{ booking_event.id }}/" class="btn btn-sm btn-primary" style="margin-left: auto; border-radius: 10px;">Edit</a>
+                                        <a href="/delete_booking_day_status/{{ data_id }}/{{ day_id }}/{{ booking_event.id }}/" class="btn btn-sm btn-danger" style="margin-left: 10px; border-radius: 10px;">Delete</a>
+                                    {% endif %}
+                                    </div>
+                                </div>
+                                <div class="">
+                                    <h6 class="card-text">Title: {{ booking_event.booking_title }}</h6>
+                                    <pre class="card-text">{{ booking_event.day_event_details }}</pre>
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
@@ -225,12 +238,10 @@
     </footer>
 
     <script>
-        $(document).ready(function () {
-            $(".carousel-img").click(function () {
-                var imgSrc = $(this).attr("src");
-                $("#modalImage").attr("src", imgSrc);
-            });
-        });
+        function showImageModal(src) {
+            const modalImage = document.getElementById("modalImage");
+            modalImage.src = src;
+        }
     </script>
 </body>
 </html>

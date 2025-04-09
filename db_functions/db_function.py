@@ -36,6 +36,10 @@ def get_all_db_data_and_with(db: Session, table, compair_with1, compair_with2, c
     db_data = db.query(table).filter(and_(compair_with1 == compair_data1, compair_with2 == compair_data2)).all()
     return db_data
 
+def get_one_db_data_and_with(db: Session, table, compair_with1, compair_with2, compair_data1, compair_data2):
+    db_data = db.query(table).filter(and_(compair_with1 == compair_data1, compair_with2 == compair_data2)).first()
+    return db_data
+
 def get_all_db_data(db: Session, table):
     db_data = db.query(table).all()
     return db_data

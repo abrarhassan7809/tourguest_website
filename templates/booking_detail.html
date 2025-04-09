@@ -155,9 +155,11 @@
             {% endif %}
         </div>
 
+        {% if not is_agent %}
         <div class="mt-3">
             <a href="/add_booking_days/{{ data_id }}/" class="btn" style="border-radius: 10px; background: rgba(60, 88, 94, 0.9); color: white">Add Booking Days</a>
         </div>
+        {% endif %}
 
         {% if booking_days_data %}
             {% for booking_data in booking_days_data %}

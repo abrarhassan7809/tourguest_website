@@ -83,7 +83,7 @@ class BookingDayEvents(Base):
     agent_name = Column(JSON, unique=False, nullable=False)
     booking_title = Column(String, unique=False, nullable=False)
     day_number = Column(Integer, unique=False, nullable=False)
-    day_event_images = Column(JSON, unique=False, nullable=False)
+    day_event_images = Column(JSON, unique=False, nullable=True)
     day_event_details = Column(String, unique=False, nullable=False)
 
     booking_days_id = Column(Integer, ForeignKey("booking_days.id", ondelete="CASCADE"), nullable=False)

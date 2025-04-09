@@ -150,7 +150,27 @@
             <div class="col-md-5 mx-auto my-4">
                 <div class="card booking_event_card">
                     <div class="card-body">
-                        <h4 class="font-weight-bolder text-center mt-2 mb-4">Update Status</h4>
+                        <h4 class="font-weight-bolder text-center mt-2 mb-4">{% if day_status_data %}Update Status{% else%}Add Status{% endif %}</h4>
+                        {% if day_status_data %}
+                        <form method="post" action="/edit_booking_day_status/{{ data_id }}/{{ day_status_data.id }}/" enctype="multipart/form-data">
+                            <div class="input-group input-group-outline my-3">
+                                <input type="text" name="agent_name" placeholder="Agent Name" value="{{ admin_data.name }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline my-3">
+                                <input type="text" name="booking_title" placeholder="Booking Title" value="{{ day_status_data.booking_title }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="file" name="images" placeholder="Images" class="form-control" multiple>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <textarea name="description" placeholder="Description" class="form-control" rows="4" required>{{ day_status_data.day_event_details }}</textarea>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn my-4 mb-2 add_booking_event_btn">Update Status</button>
+                            </div>
+                        </form>
+                        {% else %}
                         <form method="post" action="/add_booking_status/{{ data_id }}/{{ day_id }}/" enctype="multipart/form-data">
                             <div class="input-group input-group-outline my-3">
                                 <input type="text" name="agent_name" placeholder="Agent Name" value="{{ admin_data.name }}" class="form-control" required>
@@ -159,16 +179,17 @@
                                 <input type="text" name="booking_title" placeholder="Booking Title" class="form-control" required>
                             </div>
                             <div class="input-group input-group-outline mb-3">
-                                <input type="file" name="images" placeholder="Images" class="form-control" multiple required>
+                                <input type="file" name="images" placeholder="Images" class="form-control" multiple>
                             </div>
                             <div class="input-group input-group-outline mb-3">
                                 <textarea name="description" placeholder="Description" class="form-control" rows="4" required></textarea>
                             </div>
 
                             <div class="text-center">
-                                <button type="submit" class="btn w-50 my-4 mb-2 add_booking_event_btn">Add Status</button>
+                                <button type="submit" class="btn my-4 mb-2 add_booking_event_btn">Add Status</button>
                             </div>
                         </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
