@@ -2,7 +2,7 @@ from email_validator import validate_email, EmailNotValidError
 import re
 
 # email validation -----------
-password_condition = "^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*#?&+])[A-Za-z\d@$!#%*?&+]{4,20}$"
+password_condition = r"^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*#?&+])[A-Za-z\d@$!#%*?&+]{4,20}$"
 pat = re.compile(password_condition)
 
 

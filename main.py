@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request, Depends, UploadFile, status, Form, File
+from starlette.responses import JSONResponse
 from db_configration.db_connection import get_db, Base, engine
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 from db_functions.db_function import (get_one_db_data, add_data_in_db, get_all_db_data_with, get_all_db_data,
-                                      get_all_db_data_and_with, save_image, delete_db_data, get_one_db_data_and_with)
+                                      save_image, delete_db_data, get_one_db_data_and_with)
 from user_auth.auth_token import create_token
 from user_auth.email_and_pass_verification import email_checker
 from user_auth.password_hashing import Hash
@@ -206,6 +207,8 @@ def home_api(request: Request, db: Session = Depends(get_db)):
                                                         "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.post('/home/', status_code=status.HTTP_200_OK)
 def home_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -246,6 +249,8 @@ def home_api(request: Request, db: Session = Depends(get_db)):
                                                         "current_date": datetime.date.today(),
                                                         "all_booking_data": all_booking_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 # ========users apis=========
 @app.get('/users/', status_code=status.HTTP_200_OK)
 def users_api(request: Request, db: Session = Depends(get_db), search: str = None):
@@ -269,6 +274,8 @@ def users_api(request: Request, db: Session = Depends(get_db), search: str = Non
     if is_agent:
         return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_agent, "is_agent": True})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.post('/users/', status_code=status.HTTP_200_OK)
 def users_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -285,6 +292,8 @@ def users_api(request: Request, db: Session = Depends(get_db)):
     if is_agent:
         return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_agent, "is_agent": True,})
 
+    return None
+
 @app.get('/add_user/', status_code=status.HTTP_200_OK)
 def add_user_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -297,6 +306,8 @@ def add_user_api(request: Request, db: Session = Depends(get_db)):
 
     if is_admin:
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/add_user/', status_code=status.HTTP_200_OK)
 def add_user_api(request: Request, agency_name: str = Form(...), address: str = Form(...), website: str = Form(...),
@@ -339,6 +350,8 @@ def add_user_api(request: Request, agency_name: str = Form(...), address: str = 
             return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
                                                                 "error": f"Something went wrong: {str(e)}"})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/active_user/{data_id}/', status_code=status.HTTP_200_OK)
 def active_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -358,6 +371,8 @@ def active_user_api(request: Request, data_id: int, db: Session = Depends(get_db
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
         return RedirectResponse(url=app.url_path_for("users_api"))
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.get('/deactive_user/{data_id}/', status_code=status.HTTP_200_OK)
 def deactive_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -379,6 +394,8 @@ def deactive_user_api(request: Request, data_id: int, db: Session = Depends(get_
     if is_agent:
         return RedirectResponse(url=app.url_path_for("users_api"))
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/update_user/{data_id}/', status_code=status.HTTP_200_OK)
 def update_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -393,6 +410,8 @@ def update_user_api(request: Request, data_id: int, db: Session = Depends(get_db
         user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
                                                             "user_data": user_data})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/update_user/{data_id}/', status_code=status.HTTP_200_OK)
 def update_user_api(request: Request, data_id: int, agency_name: str = Form(...), address: str = Form(...),
@@ -462,6 +481,8 @@ def delete_user_api(request: Request, data_id: int, db: Session = Depends(get_db
         user_data = delete_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
         return RedirectResponse(url=app.url_path_for("users_api"))
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/update_profile/', status_code=status.HTTP_200_OK)
 def update_profile_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -476,6 +497,8 @@ def update_profile_api(request: Request, db: Session = Depends(get_db)):
     if is_agent:
         return templates.TemplateResponse("update_profile.html", {"request": request, "admin_data": is_agent,
                                                                   "is_agent": True,})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/update_profile/', status_code=status.HTTP_200_OK)
 def update_profile_api(request: Request, name: str = Form(...), email: str = Form(...), password: str = Form(...),
@@ -524,6 +547,8 @@ def update_profile_api(request: Request, name: str = Form(...), email: str = For
                                                                       "is_agent": True,
                                                                       "error": f"Something went wrong: {str(e)}"})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 # ========booking apis=========
 @app.get('/booking/', status_code=status.HTTP_200_OK)
 def booking_api(request: Request, db: Session = Depends(get_db)):
@@ -565,6 +590,8 @@ def booking_api(request: Request, db: Session = Depends(get_db)):
                                                            "is_agent": True, "current_date": datetime.date.today(),
                                                            "all_booking_data": all_booking_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.post('/booking/', status_code=status.HTTP_200_OK)
 def booking_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -604,6 +631,8 @@ def booking_api(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse("booking.html", {"request": request, "admin_data": is_agent, "is_agent": True,
                                                            "all_booking_data": all_booking_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/add_booking/', status_code=status.HTTP_200_OK)
 def add_booking_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -618,6 +647,8 @@ def add_booking_api(request: Request, db: Session = Depends(get_db)):
         agents_data = get_all_db_data(db, tour_models.Agents)
         return templates.TemplateResponse("add_booking.html", {"request": request, "admin_data": is_admin,
                                                                "agents_data": agents_data})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/add_booking/', status_code=status.HTTP_200_OK)
 async def add_booking_api(request: Request, db: Session = Depends(get_db), agent_id: int = Form(...),
@@ -651,7 +682,7 @@ async def add_booking_api(request: Request, db: Session = Depends(get_db), agent
 
         image_paths = []
         for image in images:
-            if image.filename:  # Only process if file was uploaded
+            if image.filename:
                 timestamp = int(datetime.datetime.now().timestamp())
                 # Sanitize filename
                 safe_filename = "".join(c for c in image.filename if c.isalnum() or c in (' ', '.', '_')).rstrip()
@@ -704,6 +735,8 @@ def booking_detail_api(request: Request, data_id: int, db: Session = Depends(get
                                                                   "is_agent": True, "data_id": data_id,
                                                                   "booking_days_data": booking_days_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.post('/booking/{data_id}/', status_code=status.HTTP_200_OK)
 def booking_detail_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -727,6 +760,8 @@ def booking_detail_api(request: Request, data_id: int, db: Session = Depends(get
                                                                   "is_agent": True, "data_id": data_id,
                                                                   "booking_days_data": booking_days_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/edit_booking/{data_id}/', status_code=status.HTTP_200_OK)
 def edit_booking_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -744,6 +779,8 @@ def edit_booking_api(request: Request, data_id: int, db: Session = Depends(get_d
         return templates.TemplateResponse("edit_booking.html", {"request": request, "admin_data": is_admin,
                                                                   "agents_data": agents_data, "data_id": data_id,
                                                                   "booking_data": booking_data})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/edit_booking/{data_id}/', status_code=status.HTTP_200_OK)
 async def edit_booking_api(request: Request, data_id: int, agent_id: int = Form(None), booking_title: str = Form(...),
@@ -833,6 +870,8 @@ def delete_booking_api(request: Request, data_id: int, db: Session = Depends(get
         booking_data = delete_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
         return RedirectResponse(url=app.url_path_for("booking_api"))
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/add_booking_days/{data_id}/', status_code=status.HTTP_200_OK)
 def add_booking_days_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -851,6 +890,8 @@ def add_booking_days_api(request: Request, data_id: int, db: Session = Depends(g
         return templates.TemplateResponse("add_booking_days.html", {"request": request, "admin_data": is_agent,
                                                                     "booking_data": booking_data, "is_agent": True,
                                                                     "data_id": data_id})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/add_booking_days/{data_id}/', status_code=status.HTTP_200_OK)
 async def add_booking_days_api(request: Request, data_id: int, booking_title: str = Form(...),
@@ -905,6 +946,8 @@ async def add_booking_days_api(request: Request, data_id: int, booking_title: st
                                                                    "booking_data": booking_data, "is_agent": True,
                                                                    "data_id": data_id,
                                                                    "error": f"Error adding booking: {str(e)}"})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.get('/edit_booking_day/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def edit_booking_day_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -970,6 +1013,8 @@ def delete_booking_day_api(request: Request, data_id: int, day_id: int, db: Sess
         booking_data = delete_db_data(db, tour_models.BookingDays, tour_models.BookingDays.id, day_id)
         return RedirectResponse(url=app.url_path_for("booking_api"))
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/update_booking/{data_id}/', status_code=status.HTTP_200_OK)
 def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -987,6 +1032,8 @@ def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Dep
         return templates.TemplateResponse("booking_detail.html", {"request": request, "admin_data": is_admin,
                                                                   "booking_days_data": booking_days_data})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.post('/update_booking/{data_id}/', status_code=status.HTTP_200_OK)
 def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -1002,6 +1049,8 @@ def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Dep
                                                      data_id)
         return templates.TemplateResponse("booking_detail.html", {"request": request, "admin_data": is_admin,
                                                                   "booking_days_data": booking_days_data})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.get('/booking_status/', status_code=status.HTTP_200_OK)
 def booking_status_api(request: Request, db: Session = Depends(get_db)):
@@ -1061,9 +1110,10 @@ def booking_status_api(request: Request, db: Session = Depends(get_db)):
 
         return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_agent,
                                                                   "edit_booking_status": edit_booking_status,
-                                                                  "is_agent": True,
-                                                                  "booking_map": booking_map,
+                                                                  "is_agent": True, "booking_map": booking_map,
                                                                   "booking_event_map": booking_event_map})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/booking_status/', status_code=status.HTTP_200_OK)
 def booking_status_api(request: Request, db: Session = Depends(get_db)):
@@ -1120,6 +1170,8 @@ def booking_status_api(request: Request, db: Session = Depends(get_db)):
                                                                   "is_agent": True,
                                                                   "booking_map": {booking.id: booking},
                                                                   "booking_event_map": booking_event_map})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.get('/booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1189,6 +1241,8 @@ def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Sess
                                                                   "data_id": data_id,
                                                                   "booking_map": {booking.id: booking},
                                                                   "booking_event_map": booking_event_map})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1260,6 +1314,8 @@ def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Sess
                                                                   "booking_map": {booking.id: booking},
                                                                   "booking_event_map": booking_event_map})
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/add_booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def add_booking_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -1279,6 +1335,8 @@ def add_booking_status_api(request: Request, data_id: int, day_id: int, db: Sess
         return templates.TemplateResponse("add_booking_status.html", {"request": request, "admin_data": is_agent,
                                                                       "data_id": data_id, "day_id": day_id,
                                                                       "agents_data": agents_data, "is_agent": True})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/add_booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 async def add_booking_status_api(request: Request, data_id: int, day_id: int, agent_name: str = Form(...),
@@ -1355,6 +1413,8 @@ async def add_booking_status_api(request: Request, data_id: int, day_id: int, ag
             return templates.TemplateResponse("add_booking_status.html", {"request": request, "admin_data": is_agent,
                                                                           "error": message, "data_id": data_id,
                                                                           "day_id": day_id, "is_agent": True})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.get('/edit_booking_day_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def edit_booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1445,6 +1505,8 @@ def delete_booking_day_status_api(request: Request, data_id: int, day_id: int, e
         return RedirectResponse(url=app.url_path_for("booking_day_status_api", data_id=data_id, day_id=day_id),
                                 status_code=302)
 
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+
 @app.get('/add_home_images/')
 def add_home_images(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
@@ -1459,6 +1521,8 @@ def add_home_images(request: Request, db: Session = Depends(get_db)):
     if is_agent:
         return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_agent,
                                                                    "is_agent": True})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 @app.post('/add_home_images/')
 def add_home_images(request: Request, title_1: str = Form(...), title_2: str = Form(...), title_3: str = Form(...),
@@ -1495,6 +1559,8 @@ def add_home_images(request: Request, title_1: str = Form(...), title_2: str = F
     if is_agent:
         return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_agent,
                                                                    "is_agent": True})
+
+    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
 
 
 if __name__ == '__main__':
