@@ -169,10 +169,10 @@ def home_api(request: Request, db: Session = Depends(get_db)):
     if not is_token:
         return RedirectResponse(url=app.url_path_for('logout'))
 
+    home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
         all_booking_data = get_all_db_data(db, tour_models.Bookings)
-        home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -191,7 +191,6 @@ def home_api(request: Request, db: Session = Depends(get_db)):
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
         all_booking_data = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
-        home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
         for booking in all_booking_data:
             # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
@@ -215,6 +214,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
     if not is_token:
         return RedirectResponse(url=app.url_path_for('login_api'))
 
+    home_images = db.query(tour_models.HomeImages).order_by(tour_models.HomeImages.id.desc()).first()
     is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
     if is_admin:
         all_booking_data = get_all_db_data(db, tour_models.Bookings)
@@ -230,6 +230,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
             booking.check_out_date = booking.check_out_date.date()
         return templates.TemplateResponse("base.html", {"request": request, "admin_data": is_admin,
                                                         "current_date": datetime.date.today(),
+                                                        "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
@@ -247,6 +248,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
             booking.check_out_date = booking.check_out_date.date()
         return templates.TemplateResponse("base.html", {"request": request, "admin_data": is_agent, "is_agent": True,
                                                         "current_date": datetime.date.today(),
+                                                        "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
     return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)

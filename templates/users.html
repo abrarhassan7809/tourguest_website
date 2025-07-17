@@ -63,7 +63,52 @@
             /*color: rgba(60, 88, 94, 0.9);*/
             color: black;
         }
+        /* Add this to your existing styles */
+        .table-responsive-custom {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            display: block;
+        }
 
+        .table {
+            width: 100%;
+            white-space: nowrap; /* Prevent text wrapping */
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa; /* Match your table header color */
+            z-index: 10;
+        }
+
+        .table td, .table th {
+            white-space: nowrap; /* Prevent text wrapping in cells */
+            vertical-align: middle; /* Center content vertically */
+            text-align: center; /* Center content horizontally */
+            padding: 0.75rem; /* Maintain proper padding */
+        }
+
+        /* Optional: Add a shadow to indicate scrollable area */
+        .table-responsive-custom::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive-custom::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-responsive-custom::-webkit-scrollbar-thumb {
+            background: rgba(236, 139, 2, 0.7);
+            border-radius: 10px;
+        }
+
+        .table-responsive-custom::-webkit-scrollbar-thumb:hover {
+            background: rgba(236, 139, 2, 0.9);
+        }
         .card {
             border: 2px solid rgba(236, 139, 2, 0.9);
             border-radius: 20px;
