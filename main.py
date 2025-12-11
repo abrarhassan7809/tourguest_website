@@ -32,20 +32,21 @@ def logout(request: Request, db: Session = Depends(get_db)):
     if is_token:
         is_admin = db.query(tour_models.Admin).filter(tour_models.Admin.user_token == is_token).first()
         is_user = db.query(tour_models.Agents).filter(tour_models.Agents.user_token == is_token).first()
-        if is_admin and not is_user:
-            is_admin.user_token = None
+
+        if is_admin:
+            is_admin.user_token = ""
             is_admin.user_status = False
             db.commit()
+            db.refresh(is_admin)
 
-        if is_user and not is_admin:
-            is_user.user_token = None
+        if is_user:
+            is_user.user_token = ""
             db.commit()
+            db.refresh(is_user)
 
         response = RedirectResponse(url=app.url_path_for("login_api"), status_code=status.HTTP_303_SEE_OTHER)
         response.delete_cookie('token')
-        request.cookies.pop('token')
         return response
-
     else:
         return RedirectResponse(url=app.url_path_for("login_api"), status_code=status.HTTP_303_SEE_OTHER)
 
@@ -77,7 +78,7 @@ def register_api(request: Request, name: str = Form(...), email: str = Form(...)
             else:
                 message = 'User Created Successfully'
                 current_time = datetime.datetime.now()
-                new_user = tour_models.Admin(name=name, email=email, password=password,
+                new_user = tour_models.Admin(name=name, email=email, password=password, user_token='',
                                              created_at=current_time, is_admin=True, user_status=False)
                 add_data_in_db(db, new_user)
                 return templates.TemplateResponse("admin_login.html", {"request": request, "success": message})
@@ -1509,4 +1510,4 @@ def add_home_images(request: Request, title_1: str = Form(...), title_2: str = F
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=8001, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)
