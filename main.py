@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 from db_functions.db_function import (get_one_db_data, add_data_in_db, get_all_db_data_with, get_all_db_data,
-                                      save_image, delete_db_data, get_one_db_data_and_with)
+                                      save_image, delete_db_data, get_one_db_data_and_with, get_booking_events_data)
 from user_auth.auth_token import create_token
 from user_auth.email_and_pass_verification import email_checker
 from user_auth.password_hashing import Hash
@@ -77,7 +77,7 @@ def register_api(request: Request, name: str = Form(...), email: str = Form(...)
             else:
                 message = 'User Created Successfully'
                 current_time = datetime.datetime.now()
-                new_user = tour_models.Admin(name=name, email=email, password=Hash.argon2(password),
+                new_user = tour_models.Admin(name=name, email=email, password=password,
                                              created_at=current_time, is_admin=True, user_status=False)
                 add_data_in_db(db, new_user)
                 return templates.TemplateResponse("admin_login.html", {"request": request, "success": message})
@@ -87,22 +87,20 @@ def register_api(request: Request, name: str = Form(...), email: str = Form(...)
 @app.get('/admin_login/', status_code=status.HTTP_200_OK)
 def admin_login_api(request: Request, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
-    if not is_token:
+    if is_token:
         is_admin = db.query(tour_models.Admin).filter(tour_models.Admin.user_token == is_token).first()
-        if not is_admin:
-            admin_exist = db.query(tour_models.Admin).filter(tour_models.Admin.email == 'admin123@gmail.com').first()
-            if not admin_exist:
-                current_time = datetime.datetime.now()
-                new_admin = tour_models.Admin(name="Alpha Excursion team", email="admin123@gmail.com",
-                                              password=Hash.argon2("admin123"), user_token="", created_at=current_time,
-                                              is_admin=True, user_status=False)
-                db.add(new_admin)
-                db.commit()
-                db.refresh(new_admin)
+        if is_admin:
+            return RedirectResponse(url=app.url_path_for("home_api"), status_code=status.HTTP_303_SEE_OTHER)
 
-        return templates.TemplateResponse("admin_login.html", {"request": request})
-
-    return RedirectResponse(url=app.url_path_for("home_api"), status_code=status.HTTP_303_SEE_OTHER)
+    admin_exist = db.query(tour_models.Admin).filter(tour_models.Admin.email == 'admin123@gmail.com').first()
+    if not admin_exist:
+        new_admin = tour_models.Admin(
+            name="Alpha Excursion team", email="admin123@gmail.com", password="admin123",
+            user_token="", created_at=datetime.datetime.now(), is_admin=True, user_status=False)
+        db.add(new_admin)
+        db.commit()
+        db.refresh(new_admin)
+    return templates.TemplateResponse("admin_login.html", {"request": request})
 
 @app.post('/admin_login/', status_code=status.HTTP_200_OK)
 def admin_login_api(request: Request, email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
@@ -114,7 +112,7 @@ def admin_login_api(request: Request, email: str = Form(...), password: str = Fo
     error = "User not exits!"
     if is_admin:
         if email_checker(email):
-            if Hash.verify(password, is_admin.password):
+            if password == is_admin.password:
                 is_admin.user_token = create_token()
                 is_admin.user_status = True
                 db.commit()
@@ -174,7 +172,6 @@ def home_api(request: Request, db: Session = Depends(get_db)):
     if is_admin:
         all_booking_data = get_all_db_data(db, tour_models.Bookings)
         for booking in all_booking_data:
-            # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
                 try:
                     booking.booking_image = json.loads(booking.booking_image)  # Convert to list
@@ -192,7 +189,6 @@ def home_api(request: Request, db: Session = Depends(get_db)):
     if is_agent:
         all_booking_data = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
         for booking in all_booking_data:
-            # Convert JSON string to a list if it's stored as a string
             if isinstance(booking.booking_image, str):
                 try:
                     booking.booking_image = json.loads(booking.booking_image)  # Convert to list
@@ -206,7 +202,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
                                                         "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/home/', status_code=status.HTTP_200_OK)
 def home_api(request: Request, db: Session = Depends(get_db)):
@@ -251,7 +247,7 @@ def home_api(request: Request, db: Session = Depends(get_db)):
                                                         "home_images": home_images,
                                                         "all_booking_data": all_booking_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 # ========users apis=========
 @app.get('/users/', status_code=status.HTTP_200_OK)
@@ -276,7 +272,7 @@ def users_api(request: Request, db: Session = Depends(get_db), search: str = Non
     if is_agent:
         return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_agent, "is_agent": True})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/users/', status_code=status.HTTP_200_OK)
 def users_api(request: Request, db: Session = Depends(get_db)):
@@ -294,7 +290,7 @@ def users_api(request: Request, db: Session = Depends(get_db)):
     if is_agent:
         return templates.TemplateResponse("users.html", {"request": request, "admin_data": is_agent, "is_agent": True,})
 
-    return None
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/add_user/', status_code=status.HTTP_200_OK)
 def add_user_api(request: Request, db: Session = Depends(get_db)):
@@ -309,7 +305,7 @@ def add_user_api(request: Request, db: Session = Depends(get_db)):
     if is_admin:
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/add_user/', status_code=status.HTTP_200_OK)
 def add_user_api(request: Request, agency_name: str = Form(...), address: str = Form(...), website: str = Form(...),
@@ -352,10 +348,10 @@ def add_user_api(request: Request, agency_name: str = Form(...), address: str = 
             return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
                                                                 "error": f"Something went wrong: {str(e)}"})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
-@app.get('/active_user/{data_id}/', status_code=status.HTTP_200_OK)
-def active_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
+@app.get('/change_status/{data_id}/', status_code=status.HTTP_200_OK)
+def change_status_api(request: Request, data_id: int, db: Session = Depends(get_db)):
     is_token = request.cookies.get('token')
     if not is_token:
         return RedirectResponse(url=app.url_path_for('login_api'))
@@ -364,39 +360,19 @@ def active_user_api(request: Request, data_id: int, db: Session = Depends(get_db
     if is_admin:
         user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
         if user_data:
-            user_data.user_status = True
+            if user_data.user_status:
+                user_data.user_status = False
+            else:
+                user_data.user_status = True
             db.commit()
             db.refresh(user_data)
-
         return RedirectResponse(url=app.url_path_for("users_api"))
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
         return RedirectResponse(url=app.url_path_for("users_api"))
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
-
-@app.get('/deactive_user/{data_id}/', status_code=status.HTTP_200_OK)
-def deactive_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
-    is_token = request.cookies.get('token')
-    if not is_token:
-        return RedirectResponse(url=app.url_path_for('login_api'))
-
-    is_admin = get_one_db_data(db, tour_models.Admin, tour_models.Admin.user_token, is_token)
-    if is_admin:
-        user_data = get_one_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
-        if user_data:
-            user_data.user_status = False
-            db.commit()
-            db.refresh(user_data)
-
-        return RedirectResponse(url=app.url_path_for("users_api"))
-
-    is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
-    if is_agent:
-        return RedirectResponse(url=app.url_path_for("users_api"))
-
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/update_user/{data_id}/', status_code=status.HTTP_200_OK)
 def update_user_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -413,7 +389,7 @@ def update_user_api(request: Request, data_id: int, db: Session = Depends(get_db
         return templates.TemplateResponse("add_user.html", {"request": request, "admin_data": is_admin,
                                                             "user_data": user_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/update_user/{data_id}/', status_code=status.HTTP_200_OK)
 def update_user_api(request: Request, data_id: int, agency_name: str = Form(...), address: str = Form(...),
@@ -480,10 +456,10 @@ def delete_user_api(request: Request, data_id: int, db: Session = Depends(get_db
         return RedirectResponse(url=app.url_path_for('logout'))
 
     if is_admin:
-        user_data = delete_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
+        delete_db_data(db, tour_models.Agents, tour_models.Agents.id, data_id)
         return RedirectResponse(url=app.url_path_for("users_api"))
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/update_profile/', status_code=status.HTTP_200_OK)
 def update_profile_api(request: Request, db: Session = Depends(get_db)):
@@ -500,7 +476,7 @@ def update_profile_api(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse("update_profile.html", {"request": request, "admin_data": is_agent,
                                                                   "is_agent": True,})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/update_profile/', status_code=status.HTTP_200_OK)
 def update_profile_api(request: Request, name: str = Form(...), email: str = Form(...), password: str = Form(...),
@@ -515,7 +491,7 @@ def update_profile_api(request: Request, name: str = Form(...), email: str = For
             is_admin.name = name
             is_admin.email = email
             if password:
-                is_admin.password = Hash.argon2(password)
+                is_admin.password = password
 
             db.commit()
             db.refresh(is_admin)
@@ -535,7 +511,7 @@ def update_profile_api(request: Request, name: str = Form(...), email: str = For
             is_agent.name = name
             is_agent.email = email
             if password:
-                is_agent.password = Hash.argon2(password)
+                is_agent.password = password
 
             db.commit()
             db.refresh(is_agent)
@@ -549,7 +525,7 @@ def update_profile_api(request: Request, name: str = Form(...), email: str = For
                                                                       "is_agent": True,
                                                                       "error": f"Something went wrong: {str(e)}"})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 # ========booking apis=========
 @app.get('/booking/', status_code=status.HTTP_200_OK)
@@ -592,7 +568,7 @@ def booking_api(request: Request, db: Session = Depends(get_db)):
                                                            "is_agent": True, "current_date": datetime.date.today(),
                                                            "all_booking_data": all_booking_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/booking/', status_code=status.HTTP_200_OK)
 def booking_api(request: Request, db: Session = Depends(get_db)):
@@ -633,7 +609,7 @@ def booking_api(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse("booking.html", {"request": request, "admin_data": is_agent, "is_agent": True,
                                                            "all_booking_data": all_booking_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/add_booking/', status_code=status.HTTP_200_OK)
 def add_booking_api(request: Request, db: Session = Depends(get_db)):
@@ -650,7 +626,7 @@ def add_booking_api(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse("add_booking.html", {"request": request, "admin_data": is_admin,
                                                                "agents_data": agents_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/add_booking/', status_code=status.HTTP_200_OK)
 async def add_booking_api(request: Request, db: Session = Depends(get_db), agent_id: int = Form(...),
@@ -737,7 +713,7 @@ def booking_detail_api(request: Request, data_id: int, db: Session = Depends(get
                                                                   "is_agent": True, "data_id": data_id,
                                                                   "booking_days_data": booking_days_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/booking/{data_id}/', status_code=status.HTTP_200_OK)
 def booking_detail_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -762,7 +738,7 @@ def booking_detail_api(request: Request, data_id: int, db: Session = Depends(get
                                                                   "is_agent": True, "data_id": data_id,
                                                                   "booking_days_data": booking_days_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/edit_booking/{data_id}/', status_code=status.HTTP_200_OK)
 def edit_booking_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -782,7 +758,7 @@ def edit_booking_api(request: Request, data_id: int, db: Session = Depends(get_d
                                                                   "agents_data": agents_data, "data_id": data_id,
                                                                   "booking_data": booking_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/edit_booking/{data_id}/', status_code=status.HTTP_200_OK)
 async def edit_booking_api(request: Request, data_id: int, agent_id: int = Form(None), booking_title: str = Form(...),
@@ -872,7 +848,7 @@ def delete_booking_api(request: Request, data_id: int, db: Session = Depends(get
         booking_data = delete_db_data(db, tour_models.Bookings, tour_models.Bookings.id, data_id)
         return RedirectResponse(url=app.url_path_for("booking_api"))
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/add_booking_days/{data_id}/', status_code=status.HTTP_200_OK)
 def add_booking_days_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -893,7 +869,7 @@ def add_booking_days_api(request: Request, data_id: int, db: Session = Depends(g
                                                                     "booking_data": booking_data, "is_agent": True,
                                                                     "data_id": data_id})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/add_booking_days/{data_id}/', status_code=status.HTTP_200_OK)
 async def add_booking_days_api(request: Request, data_id: int, booking_title: str = Form(...),
@@ -949,7 +925,7 @@ async def add_booking_days_api(request: Request, data_id: int, booking_title: st
                                                                    "data_id": data_id,
                                                                    "error": f"Error adding booking: {str(e)}"})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/edit_booking_day/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def edit_booking_day_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1015,7 +991,7 @@ def delete_booking_day_api(request: Request, data_id: int, day_id: int, db: Sess
         booking_data = delete_db_data(db, tour_models.BookingDays, tour_models.BookingDays.id, day_id)
         return RedirectResponse(url=app.url_path_for("booking_api"))
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/update_booking/{data_id}/', status_code=status.HTTP_200_OK)
 def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -1034,7 +1010,7 @@ def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Dep
         return templates.TemplateResponse("booking_detail.html", {"request": request, "admin_data": is_admin,
                                                                   "booking_days_data": booking_days_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/update_booking/{data_id}/', status_code=status.HTTP_200_OK)
 def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Depends(get_db)):
@@ -1052,7 +1028,7 @@ def add_booking_day_detail_api(request: Request, data_id: int, db: Session = Dep
         return templates.TemplateResponse("booking_detail.html", {"request": request, "admin_data": is_admin,
                                                                   "booking_days_data": booking_days_data})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/booking_status/', status_code=status.HTTP_200_OK)
 def booking_status_api(request: Request, db: Session = Depends(get_db)):
@@ -1064,58 +1040,25 @@ def booking_status_api(request: Request, db: Session = Depends(get_db)):
     edit_booking_status = True
 
     if is_admin:
-        bookings = get_all_db_data(db, tour_models.Bookings)
-        booking_days = get_all_db_data(db, tour_models.BookingDays)
-        events = get_all_db_data(db, tour_models.BookingDayEvents)
+        booking_map, booking_event_map = get_booking_events_data(
+            db, is_admin=True, booking_model=tour_models.Bookings, booking_day_model=tour_models.BookingDays,
+            booking_day_event_model=tour_models.BookingDayEvents)
 
-        # Convert image strings to lists
-        for event in events:
-            if isinstance(event.day_event_images, str):
-                event.day_event_images = json.loads(event.day_event_images)
-
-        # Organize events by booking
-        booking_event_map = defaultdict(list)
-        for event in events:
-            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
-            if day:
-                for booking in bookings:
-                    booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
-
-        booking_map = {b.id: b for b in bookings}
-
-        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_admin,
-                                                                  "edit_booking_status": edit_booking_status,
-                                                                  "is_agent": False,
-                                                                  "booking_map": booking_map,
-                                                                  "booking_event_map": booking_event_map})
+        return templates.TemplateResponse("booking_status.html", {
+            "request": request, "admin_data": is_admin, "edit_booking_status": edit_booking_status,
+            "is_agent": False, "booking_map": booking_map, "booking_event_map": booking_event_map})
 
     is_agent = get_one_db_data(db, tour_models.Agents, tour_models.Agents.user_token, is_token)
     if is_agent:
-        bookings = get_all_db_data_with(db, tour_models.Bookings, tour_models.Bookings.agent_id, is_agent.id)
-        booking_days = get_all_db_data(db, tour_models.BookingDays)
-        events = get_all_db_data(db, tour_models.BookingDayEvents)
+        booking_map, booking_event_map = get_booking_events_data(
+            db, is_admin=False, user_id=is_agent.id, booking_model=tour_models.Bookings,
+            booking_day_model=tour_models.BookingDays, booking_day_event_model=tour_models.BookingDayEvents)
 
-        # Convert image strings to lists
-        for event in events:
-            if isinstance(event.day_event_images, str):
-                event.day_event_images = json.loads(event.day_event_images)
+        return templates.TemplateResponse("booking_status.html", {
+            "request": request, "admin_data": is_agent, "edit_booking_status": edit_booking_status,
+            "is_agent": True, "booking_map": booking_map, "booking_event_map": booking_event_map})
 
-        # Organize events by booking
-        booking_event_map = defaultdict(list)
-        for event in events:
-            day = next((d for d in booking_days if d.id == event.booking_days_id), None)
-            if day:
-                for booking in bookings:
-                    booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
-
-        booking_map = {b.id: b for b in bookings}
-
-        return templates.TemplateResponse("booking_status.html", {"request": request, "admin_data": is_agent,
-                                                                  "edit_booking_status": edit_booking_status,
-                                                                  "is_agent": True, "booking_map": booking_map,
-                                                                  "booking_event_map": booking_event_map})
-
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/booking_status/', status_code=status.HTTP_200_OK)
 def booking_status_api(request: Request, db: Session = Depends(get_db)):
@@ -1173,7 +1116,7 @@ def booking_status_api(request: Request, db: Session = Depends(get_db)):
                                                                   "booking_map": {booking.id: booking},
                                                                   "booking_event_map": booking_event_map})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1244,7 +1187,7 @@ def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Sess
                                                                   "booking_map": {booking.id: booking},
                                                                   "booking_event_map": booking_event_map})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1316,7 +1259,7 @@ def booking_day_status_api(request: Request, data_id: int, day_id: int, db: Sess
                                                                   "booking_map": {booking.id: booking},
                                                                   "booking_event_map": booking_event_map})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/add_booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def add_booking_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1338,7 +1281,7 @@ def add_booking_status_api(request: Request, data_id: int, day_id: int, db: Sess
                                                                       "data_id": data_id, "day_id": day_id,
                                                                       "agents_data": agents_data, "is_agent": True})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/add_booking_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 async def add_booking_status_api(request: Request, data_id: int, day_id: int, agent_name: str = Form(...),
@@ -1416,7 +1359,7 @@ async def add_booking_status_api(request: Request, data_id: int, day_id: int, ag
                                                                           "error": message, "data_id": data_id,
                                                                           "day_id": day_id, "is_agent": True})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/edit_booking_day_status/{data_id}/{day_id}/', status_code=status.HTTP_200_OK)
 def edit_booking_day_status_api(request: Request, data_id: int, day_id: int, db: Session = Depends(get_db)):
@@ -1507,7 +1450,7 @@ def delete_booking_day_status_api(request: Request, data_id: int, day_id: int, e
         return RedirectResponse(url=app.url_path_for("booking_day_status_api", data_id=data_id, day_id=day_id),
                                 status_code=302)
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.get('/add_home_images/')
 def add_home_images(request: Request, db: Session = Depends(get_db)):
@@ -1524,7 +1467,7 @@ def add_home_images(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_agent,
                                                                    "is_agent": True})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 @app.post('/add_home_images/')
 def add_home_images(request: Request, title_1: str = Form(...), title_2: str = Form(...), title_3: str = Form(...),
@@ -1562,8 +1505,8 @@ def add_home_images(request: Request, title_1: str = Form(...), title_2: str = F
         return templates.TemplateResponse("add_home_images.html", {"request": request, "admin_data": is_agent,
                                                                    "is_agent": True})
 
-    return JSONResponse({"status": "error", "message": "Some thing went wrong!"}, status_code=400)
+    return RedirectResponse(url=app.url_path_for('logout'))
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=8001, reload=True)

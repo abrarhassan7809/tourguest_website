@@ -116,6 +116,9 @@
 
                 <!-- Profile Dropdown -->
                 <div class="dropdown position-relative">
+                    <span class="badge badge-success p-2 mr-3" style="color: white; font-size: 15px; border-radius: 10px;">
+                        {% if not is_agent %}Admin{% else %}{{ admin_data.agency_name }}{% endif %}
+                    </span>
                     <button type="button" class="btn my-2 my-sm-0 logout-btn dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Profile
                     </button>

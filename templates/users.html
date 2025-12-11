@@ -159,6 +159,9 @@
 
                 <!-- Profile Dropdown -->
                 <div class="dropdown position-relative">
+                    <span class="badge badge-success p-2 mr-3" style="color: white; font-size: 15px; border-radius: 10px;">
+                        {% if not is_agent %}Admin{% else %}{{ admin_data.agency_name }}{% endif %}
+                    </span>
                     <button type="button" class="btn my-2 my-sm-0 logout-btn dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Profile
                     </button>
@@ -216,7 +219,15 @@
                                 <td>{{ user.mobile_number }}</td>
                                 <td>{% if user.is_admin %}Admin{% else %}Agent{% endif %}</td>
                                 <td>{% if user.user_status %}Active{% else %}Deactive{% endif %}</td>
-                                <td style="text-align: center"><a href="/active_user/{{ user.id }}/" class="btn btn-sm btn-info">active</a> <a href="/deactive_user/{{ user.id }}/" class="btn btn-sm btn-danger">deactive</a> <a href="/update_user/{{ user.id }}/" class="btn btn-sm btn-success">edit profile</a></td>
+                                <td style="text-align: center">
+                                    {% if user.user_status %}
+                                        <a href="/change_status/{{ user.id }}/" class="btn btn-sm btn-warning">deactive</a>
+                                    {% else %}
+                                        <a href="/change_status/{{ user.id }}/" class="btn btn-sm btn-info">active</a>
+                                    {% endif %}
+                                    <a href="/update_user/{{ user.id }}/" class="btn btn-sm btn-success">edit profile</a>
+                                    <a href="/delete_user/{{ user.id }}/" class="btn btn-sm btn-danger">delete</a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>

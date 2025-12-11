@@ -1,6 +1,8 @@
+import json
 import shutil
 import uuid
-
+from collections import defaultdict
+from typing import Any
 from fastapi import UploadFile
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -44,7 +46,6 @@ def get_all_db_data(db: Session, table):
     db_data = db.query(table).all()
     return db_data
 
-
 def save_image(upload_dir, file: UploadFile):
     file_ext = file.filename.split(".")[-1]  # Get file extension
     unique_filename = f"{uuid.uuid4()}.{file_ext}"  # Generate unique filename
@@ -52,3 +53,43 @@ def save_image(upload_dir, file: UploadFile):
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return f"/static/home_images/{unique_filename}"
+
+def get_booking_events_data(db: Session, is_admin: bool, user_id: int = None, booking_model=Any, booking_day_model=Any,
+                            booking_day_event_model=Any):
+    if is_admin:
+        bookings = get_all_db_data(db, booking_model)
+    else:
+        bookings = get_all_db_data_with(db, booking_model, booking_model.agent_id, user_id)
+
+    if not bookings:
+        return {}, {}
+
+    booking_ids = [booking.id for booking in bookings]
+
+    booking_days = db.query(booking_day_model).filter(booking_day_model.booking_id.in_(booking_ids)).all()
+    booking_day_ids = [bd.id for bd in booking_days]
+
+    # Get events for these specific booking days
+    events = db.query(booking_day_event_model).filter(
+        booking_day_event_model.booking_days_id.in_(booking_day_ids)).all() if booking_day_ids else []
+
+    # Convert image strings to lists
+    for event in events:
+        if isinstance(event.day_event_images, str):
+            try:
+                event.day_event_images = json.loads(event.day_event_images)
+            except:
+                event.day_event_images = []
+
+    # Organize events by booking
+    booking_event_map = defaultdict(list)
+    for event in events:
+        day = next((d for d in booking_days if d.id == event.booking_days_id), None)
+        if day:
+            booking = next((b for b in bookings if b.id == day.booking_id), None)
+            if booking:
+                booking_event_map[booking.id].append({"event": event, "day_title": day.day_title})
+
+    booking_map = {b.id: b for b in bookings}
+
+    return booking_map, booking_event_map
