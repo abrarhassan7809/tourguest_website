@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+    <title>The Alpha World</title>
+    <style>
+        .navbar {
+            background: rgba(236, 139, 2, 0.9);
+        }
+        .navbar-brand img {
+            height: 50px;
+            width: auto;
+        }
+        .navbar-nav .nav-item .nav-link {
+            color: rgba(60, 88, 94, 0.9);
+            font-size: 18px;
+            padding: 10px 20px 10px 20px;
+        }
+        .navbar-nav .nav-item .nav-link:hover {
+            background: rgba(60, 88, 94, 0.6);
+            color: white;
+            border-radius: 10px;
+        }
+        .active {
+            background: rgba(60, 88, 94, 0.6) !important;
+            color: #fff !important;
+            border-radius: 10px;
+        }
+        .logout-btn {
+            background: rgba(60, 88, 94, 0.9);
+            border-radius: 10px;
+            color: white;
+        }
+        .logout-btn:hover {
+            background: rgba(60, 88, 94, 0.6);
+            color: white;
+            border-radius: 10px;
+        }
+        .dropdown-menu {
+            background: rgba(236, 139, 2, 0.9);
+            top: 100%;
+            left: auto !important;
+            right: 0 !important;
+            margin-top: 5px;
+        }
+        .dropdown-menu .dropdown-item {
+            color: rgba(60, 88, 94, 0.9);
+        }
+        .dropdown-menu .dropdown-item:hover {
+            background: rgba(60, 88, 94, 0.6);
+            color: white !important;
+        }
+
+        .carousel-inner .carousel-caption h5, p {
+            /*color: rgba(60, 88, 94, 0.9);*/
+            color: black;
+        }
+
+        .card {
+            border: 2px solid rgba(236, 139, 2, 0.9);
+            background: rgba(60, 88, 94, 0.91);
+            border-radius: 20px;
+            transition: transform 0.3s;
+            box-shadow: 3px 3px 5px #888888;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            transition: transform 0.3s;
+            box-shadow: 5px 5px 10px #888888;
+        }
+
+        .footer_section {
+            position: static;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(236, 139, 2, 0.9);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <section class="header-section">
+        <nav class="navbar navbar-expand-lg">
+            <a class="navbar-brand" href=""><img src="/static/logo_images/Logo.png" alt="logo"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse ml-4" id="navbarTogglerDemo02">
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/booking/">Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/booking_status/">Guest Status</a>
+                    </li>
+                    {% if not is_agent %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/">Users</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Profile Dropdown -->
+                <div class="dropdown position-relative">
+                    <span class="badge badge-success p-2 mr-3" style="color: white; font-size: 15px; border-radius: 10px;">
+                        {% if not is_agent %}Admin{% else %}{{ admin_data.agency_name }}{% endif %}
+                    </span>
+                    <button type="button" class="btn my-2 my-sm-0 logout-btn dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Profile
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/update_profile/">Profile</a>
+                        {% if not is_agent %}
+                            <a class="dropdown-item" href="/add_home_images/">Add Home Images</a>
+                        {% endif %}
+                        <a class="dropdown-item" href="/logout/">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </section>
+
+<!--  booking section -->
+    <section class="mb-4 edit_booking_section">
+        <div>
+            {% if error %}
+            <div style="z-index: 9999;" class="col-md-12 alert alert-danger alert-dismissible mx-auto position-absolute top-0 start-0 end-0" role="alert">
+                {{ error }}
+                <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+            {% endif %}
+            {% if success %}
+            <div style="color: white; z-index: 9999;" class="col-md-12 alert alert-success alert-dismissible mx-auto position-absolute top-0 start-0 end-0" role="alert">
+                {{ success }}
+                <span style="float: right; cursor: pointer; font-size: 20px;" aria-hidden="true" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row m-0">
+            <div class="col-md-5 mx-auto my-4">
+                {% if booking_data %}
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" action="/edit_booking/{{ data_id }}" enctype="multipart/form-data">
+                            <h4 class="font-weight-bolder text-center mt-2 mb-4">Edit Booking</h4>
+                            <div class="input-group input-group-outline my-3">
+                                <select name="agent_id" class="form-control">
+                                    <option value="" disabled selected>{{ booking_data.agency_name }}</option>
+                                    {% for agent in agents_data %}
+                                        <option value="{{ agent.id }}">{{ agent.agency_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="text" name="booking_title" placeholder="Booking Title" value="{{ booking_data.booking_title }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="date" name="check_in_date" placeholder="Check In Date" value="{{ booking_data.check_in_date.strftime('%Y-%m-%d') }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="date" name="check_out_date" placeholder="Check Out Date" value="{{ booking_data.check_out_date.strftime('%Y-%m-%d') }}" class="form-control" required>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <input type="file" name="images" class="form-control" multiple>
+                            </div>
+                            <div class="input-group input-group-outline mb-3">
+                                <textarea name="description" placeholder="Description" class="form-control" rows="4" required>{{ booking_data.booking_details }}</textarea>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn my-4 mb-2">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+<!--  footer section -->
+    <footer class="footer_section">
+        <div class="container pt-2">
+            <hr style="border: 1px solid gray;">
+            <div class="row m-0" style="height: 40px;">
+                <div class="col-md-12">
+                    <div class="copyright text-center text-sm text-white text-lg-start"></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          var errorAlerts = document.querySelectorAll(".alert-danger");
+          var successAlerts = document.querySelectorAll(".alert-success");
+
+          errorAlerts.forEach(function (errorAlert) {
+              setTimeout(function () {
+                  errorAlert.style.display = "none";
+              }, 2000);
+          });
+
+          successAlerts.forEach(function (successAlert) {
+              setTimeout(function () {
+                  successAlert.style.display = "none";
+              }, 2000);
+          });
+        });
+</script>
+</body>
+</html>
